@@ -2,8 +2,10 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +17,7 @@ import {
   CreateDrawerDocs,
   DeleteDrawerDocs,
 } from 'src/docs/decorators/drawer.decorator';
+import { SearchQuery } from 'src/common/dto/search-query.dto';
 
 @UseGuards(AuthGuard)
 @Controller('drawer')
@@ -28,6 +31,14 @@ export class DrawerController {
     @Body() createDrawerDto: CreateDrawerDto,
   ): Promise<CreateDrawerResponse> {
     return await this.drawerService.createDrawer(req.user.id, createDrawerDto);
+  }
+
+  @Get()
+  async getMyDrawerList(
+    @Req() req: Request,
+    @Query() searchQuery: SearchQuery,
+  ) {
+    return await this.drawerService.getMyDrawerList(req.user.id, searchQuery);
   }
 
   @DeleteDrawerDocs()

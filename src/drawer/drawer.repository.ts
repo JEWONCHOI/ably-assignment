@@ -3,6 +3,7 @@ import { Drawer } from 'src/entities';
 import { Repository } from 'typeorm';
 import { SaveDrawerDto } from './dto/save-drawer.dto';
 import { GetMyDrawerByNameDto } from './dto/get-my-drawer-by-name.dto';
+import { SearchQuery } from 'src/common/dto/search-query.dto';
 
 @Injectable()
 export class DrawerRepository {
@@ -22,6 +23,33 @@ export class DrawerRepository {
       thumbnails: [],
       user_id: saveDrawerDto.userId,
     });
+  }
+
+  /**
+   *
+   * @param userId 유저 Unique Key
+   * @param searchQuery page, size
+   * @returns drawerList(찜 박스 목록), total(총 찜박스 개수)
+   */
+  async getMyDrawerListWithSkipAndTake(
+    userId: number,
+    searchQuery: SearchQuery,
+  ): Promise<{ drawerList: Drawer[]; total: number }> {
+    const [drawerList, total] = await this.drawerRepository.findAndCount({
+      select: {
+        id: true,
+        name: true,
+        thumbnails: true,
+        zzim_count: true,
+        created_at: true,
+      },
+      where: { user_id: userId },
+      order: { created_at: 'DESC' },
+      take: searchQuery.size,
+      skip: (searchQuery.page - 1) * searchQuery.size,
+    });
+
+    return { drawerList, total };
   }
 
   /**
