@@ -39,4 +39,24 @@ export class DrawerRepository {
       },
     });
   }
+
+  /**
+   *
+   * @param drawerId 박스 Unique Key
+   * @returns drawer | null
+   */
+  async getDrawerById(drawerId: number): Promise<Drawer> {
+    return await this.drawerRepository.findOne({
+      where: { id: drawerId },
+    });
+  }
+
+  /**
+   *
+   * @param drawerId 박스 Unique Key
+   * @param userId 유저 Unique KEy
+   */
+  async deleteMyDrawer(drawerId: number, userId: number): Promise<void> {
+    await this.drawerRepository.delete({ id: drawerId, user_id: userId });
+  }
 }

@@ -27,4 +27,20 @@ export class DrawerService {
 
     return { id, name, thumbnails };
   }
+
+  async deleteMyDrawer(userId: number, drawerId: number): Promise<string> {
+    const existingDrawer = await this.drawerRepository.getDrawerById(drawerId);
+
+    if (!existingDrawer) {
+      throw new HttpException(EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND, 404);
+    }
+
+    if (existingDrawer.user_id !== userId) {
+      throw new HttpException(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER, 403);
+    }
+
+    await this.drawerRepository.deleteMyDrawer(drawerId, userId);
+
+    return 'OK';
+  }
 }

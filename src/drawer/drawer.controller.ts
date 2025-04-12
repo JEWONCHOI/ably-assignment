@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { DrawerService } from './drawer.service';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { CreateDrawerDto, CreateDrawerResponse } from './dto/create-drawer.dto';
@@ -17,5 +25,13 @@ export class DrawerController {
     @Body() createDrawerDto: CreateDrawerDto,
   ): Promise<CreateDrawerResponse> {
     return await this.drawerService.createDrawer(req.user.id, createDrawerDto);
+  }
+
+  @Delete(':drawerId')
+  async deleteMyDrawer(
+    @Req() req: Request,
+    @Param('drawerId') drawerId: number,
+  ): Promise<string> {
+    return await this.drawerService.deleteMyDrawer(req.user.id, drawerId);
   }
 }
