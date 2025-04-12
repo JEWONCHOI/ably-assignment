@@ -5,6 +5,7 @@ import { TokenService } from 'src/token/token.service';
 import * as argon2 from 'argon2';
 import { SignupDto, SignupResponse } from './dto/signup.dto';
 import { SigninDto, SigninResponse } from './dto/signin.dto';
+import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 
 @Injectable()
 export class AuthService {
@@ -42,7 +43,7 @@ export class AuthService {
     if (!exisitngUser) {
       throw new HttpException(
         EXCEPTION_MESSAGE.USER.INVALID_EMAIL_OR_PASSWORD,
-        409,
+        401,
       );
     }
 
@@ -54,7 +55,7 @@ export class AuthService {
     if (!comparePassword) {
       throw new HttpException(
         EXCEPTION_MESSAGE.USER.INVALID_EMAIL_OR_PASSWORD,
-        409,
+        401,
       );
     }
 
