@@ -9,6 +9,7 @@ export const validation: Joi.Schema = Joi.object({
   DB_PASSWORD: Joi.string().required(),
   DB_NAME: Joi.string().required(),
   JWT_SECRET: Joi.string().required(),
+  HASH_PASSWORD_SECRET: Joi.string().required(),
 }).options({
   abortEarly: true,
 });
