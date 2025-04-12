@@ -5,10 +5,7 @@ import { AppModule } from 'src/app.module';
 import { DataSource } from 'typeorm';
 import { AllExceptionsFilter } from 'src/common/filters';
 import { ResponseInterceptor } from 'src/common/interceptors';
-import {
-  generateRandomEmail,
-  generateRandomString,
-} from 'src/common/utils/function';
+import { generateRandomString } from 'src/common/utils/function';
 import { registerAndLoginTestUser } from './helper';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 
@@ -16,6 +13,7 @@ describe('Drawer API Test', () => {
   let app: INestApplication;
   let dataSource: DataSource;
   let accessToken: string;
+  let anonymousToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -39,6 +37,9 @@ describe('Drawer API Test', () => {
 
     const signinResponse = await registerAndLoginTestUser(app);
     accessToken = signinResponse.accessToken;
+
+    const anonymousUserResponse = await registerAndLoginTestUser(app);
+    anonymousToken = anonymousUserResponse.accessToken;
   });
 
   afterAll(async () => {
@@ -49,27 +50,27 @@ describe('Drawer API Test', () => {
   });
 
   it('[suceess] 찜 서랍을 정상적으로 생성한다', async () => {
+    const boxName = generateRandomString();
     const res = await request(app.getHttpServer())
       .post('/v1/drawer')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
-        name: '테스트 생성 찜박스',
+        name: boxName,
       })
       .expect(201);
 
-    expect(res.body.data).toEqual({
-      id: 1,
-      name: '테스트 생성 찜박스',
-      thumbnails: [],
-    });
+    expect(res.body.data).toHaveProperty('id');
+    expect(res.body.data.name).toEqual(boxName);
+    expect(res.body.data.thumbnails).toEqual([]);
   });
 
   it('[fail] 중복된 이름으로 생성한 찜박스는 실패한다', async () => {
+    const boxName = generateRandomString();
     await request(app.getHttpServer())
       .post('/v1/drawer')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
-        name: '테스트 생성 찜박스2',
+        name: boxName,
       })
       .expect(201);
 
@@ -77,11 +78,64 @@ describe('Drawer API Test', () => {
       .post('/v1/drawer')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
-        name: '테스트 생성 찜박스2',
+        name: boxName,
       })
       .expect(409);
 
     expect(res.body).toHaveProperty('message');
     expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.DUPLICATE_NAME);
+  });
+
+  it('[success] 찜박스를 성공적으로 삭제한다', async () => {
+    const boxName = generateRandomString();
+
+    const beforeCreateBox = await request(app.getHttpServer())
+      .post('/v1/drawer')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        name: boxName,
+      })
+      .expect(201);
+
+    const createdBoxId = beforeCreateBox.body.data.id;
+
+    const res = await request(app.getHttpServer())
+      .delete(`/v1/drawer/${createdBoxId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    expect(res.body.data).toBe('OK');
+  });
+
+  it('[fail] 존재하지 않은 찜박스를 삭제한다면 실패한다', async () => {
+    const res = await request(app.getHttpServer())
+      .delete(`/v1/drawer/5000`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(404);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(
+      EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND,
+    );
+  });
+
+  it('[fail] 자신의 것이 아닌 찜박스를 삭제한다면 실패한다', async () => {
+    const anonymousCreatRes = await request(app.getHttpServer())
+      .post('/v1/drawer')
+      .set('Authorization', `Bearer ${anonymousToken}`)
+      .send({
+        name: generateRandomString(),
+      })
+      .expect(201);
+
+    const anonymousBox = anonymousCreatRes.body.data;
+
+    const res = await request(app.getHttpServer())
+      .delete(`/v1/drawer/${anonymousBox.id}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(403);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER);
   });
 });
