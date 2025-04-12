@@ -6,7 +6,7 @@ import { DataSource } from 'typeorm';
 import { AllExceptionsFilter } from 'src/common/filters';
 import { ResponseInterceptor } from 'src/common/interceptors';
 import { generateRandomString } from 'src/common/utils/function';
-import { registerAndLoginTestUser } from './helper';
+import { registerAndLoginTestUser, userCreateDrawer } from './helper';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 
 describe('Drawer API Test', () => {
@@ -137,5 +137,34 @@ describe('Drawer API Test', () => {
 
     expect(res.body).toHaveProperty('message');
     expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER);
+  });
+
+  it('[success] 자신의 찜박스 목록을 조회한다', async () => {
+    const newUserResponse = await registerAndLoginTestUser(app);
+    const newUserAccessToken = newUserResponse.accessToken;
+
+    const drawers = [];
+    for (let i = 0; i < 4; i++) {
+      const drawer = await userCreateDrawer(app, newUserAccessToken);
+      drawers.push(drawer);
+    }
+
+    const res = await request(app.getHttpServer())
+      .get('/v1/drawer?page=1&size=10')
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    expect(res.body.data.drawerList.length).toEqual(4);
+    expect(res.body.data.totalElement).toEqual(4);
+    expect(res.body.data.totalPages).toEqual(1);
+    expect(res.body.data.currentPage).toEqual(1);
+
+    for (let i = 0; i < drawers.length; i++) {
+      const reverseDrawer = drawers[drawers.length - 1 - i];
+      const curSaveDrawer = res.body.data.drawerList[i];
+
+      expect(reverseDrawer.id).toEqual(curSaveDrawer.id);
+      expect(reverseDrawer.name).toEqual(curSaveDrawer.name);
+    }
   });
 });
