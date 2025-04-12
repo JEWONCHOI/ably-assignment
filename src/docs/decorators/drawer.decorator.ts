@@ -3,6 +3,9 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
@@ -35,6 +38,40 @@ export function CreateDrawerDocs() {
       description: '찜박스 생성',
       example: successForm('/v1/auth/signup', 201, CREATE_DRAWER_DATA),
       type: CreateDrawerResponse,
+    }),
+  );
+}
+
+export function DeleteDrawerDocs() {
+  return applyDecorators(
+    ApiTags('Drawer'),
+    ApiOperation({
+      summary: 'Drawer Delete API',
+      description: '유저가 "자신의" 찜박스를 삭제합니다',
+    }),
+    ApiNotFoundResponse({
+      description: '유저가 찾은 id의 찜박스가 존재하지 않을 때',
+      example: exceptionForm(
+        '/v1/drawer/{drawerId}',
+        404,
+        EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND,
+      ),
+    }),
+    ApiForbiddenResponse({
+      description: '유저가 자신의 것이 아닌 찜박스를 삭제하려고 할 때',
+      example: exceptionForm(
+        '/v1/drawer/{drawerId}',
+        403,
+        EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER,
+      ),
+    }),
+    ApiOkResponse({
+      description: '찜박스 삭제 완료',
+      example: successForm('/v1/auth/signup', 200, 'OK'),
+      schema: {
+        type: 'string',
+        example: 'OK',
+      },
     }),
   );
 }
