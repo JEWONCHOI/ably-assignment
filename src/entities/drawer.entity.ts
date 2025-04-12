@@ -23,7 +23,13 @@ export class Drawer {
     type: 'json',
     nullable: false,
   })
-  images: string[];
+  thumbnails: string[];
+
+  @Column({
+    type: 'int',
+    default: 0,
+  })
+  zzim_count: number;
 
   @ManyToOne(() => User, (user) => user.drawers, {
     createForeignKeyConstraints: false,
