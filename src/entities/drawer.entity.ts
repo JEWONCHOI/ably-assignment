@@ -13,6 +13,7 @@ export class Drawer {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({
     type: 'varchar',
     name: 'name',
