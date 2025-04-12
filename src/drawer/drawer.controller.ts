@@ -16,6 +16,7 @@ import { Request } from 'express';
 import {
   CreateDrawerDocs,
   DeleteDrawerDocs,
+  GetDrawerDocs,
 } from 'src/docs/decorators/drawer.decorator';
 import { SearchQuery } from 'src/common/dto/search-query.dto';
 
@@ -33,6 +34,7 @@ export class DrawerController {
     return await this.drawerService.createDrawer(req.user.id, createDrawerDto);
   }
 
+  @GetDrawerDocs()
   @Get()
   async getMyDrawerList(
     @Req() req: Request,

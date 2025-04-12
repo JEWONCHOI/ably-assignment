@@ -1,4 +1,4 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ChangePaginationFormDto<T> {
   @ApiProperty({ description: '데이터 리스트' })

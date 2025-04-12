@@ -12,8 +12,12 @@ import {
 import { exceptionForm } from '../example/form/exception.form';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { successForm } from '../example/form/success.form';
-import { CREATE_DRAWER_DATA } from '../example/data/drawer';
+import {
+  CREATE_DRAWER_DATA,
+  GET_MY_DRAWER_LIST_DATA,
+} from '../example/data/drawer';
 import { CreateDrawerResponse } from 'src/drawer/dto/create-drawer.dto';
+import { DrawerListPaginationResponse } from 'src/drawer/dto/get-my-drawer-list.dto';
 
 export function CreateDrawerDocs() {
   return applyDecorators(
@@ -38,6 +42,28 @@ export function CreateDrawerDocs() {
       description: '찜박스 생성',
       example: successForm('/v1/auth/signup', 201, CREATE_DRAWER_DATA),
       type: CreateDrawerResponse,
+    }),
+  );
+}
+
+export function GetDrawerDocs() {
+  return applyDecorators(
+    ApiTags('Drawer'),
+    ApiOperation({
+      summary: 'Get Drawer API',
+      description: '유저가 "자신의" 찜박스 리스트를 수령합니다',
+    }),
+    ApiBadRequestResponse({
+      description: '필요 쿼리가 존재하지 않는 경우',
+      example: exceptionForm('/v1/drawer', 400, [
+        'page must be a number conforming to the specified constraints',
+        'size must be a number conforming to the specified constraints',
+      ]),
+    }),
+    ApiOkResponse({
+      description: '찜박스 리스트 수령 완료',
+      example: successForm('/v1/auth/signup', 200, GET_MY_DRAWER_LIST_DATA),
+      type: DrawerListPaginationResponse,
     }),
   );
 }
