@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { validation } from './common/utils';
+import { AuthModule } from './auth/auth.module';
+import { TokenModule } from './token/token.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { validation } from './common/utils';
       isGlobal: true,
       validationSchema: validation,
     }),
+    AuthModule,
+    TokenModule,
   ],
   controllers: [AppController],
   providers: [AppService],

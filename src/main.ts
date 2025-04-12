@@ -20,10 +20,11 @@ async function bootstrap() {
     }),
   );
 
-  setupSwagger(app);
+  app.setGlobalPrefix('v1');
   app.enableCors();
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
+  setupSwagger(app);
 
   await app.listen(PORT);
 
