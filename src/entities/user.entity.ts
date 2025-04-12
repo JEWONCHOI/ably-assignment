@@ -1,4 +1,11 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Drawer } from './drawer.entity';
 
 @Entity({ name: 'user' })
 @Index('email_index', ['email'])
@@ -24,4 +31,9 @@ export class User {
     name: 'nickname',
   })
   nickname: string;
+
+  @OneToMany(() => Drawer, (drawer) => drawer.user, {
+    createForeignKeyConstraints: false,
+  })
+  drawers: Drawer[];
 }
