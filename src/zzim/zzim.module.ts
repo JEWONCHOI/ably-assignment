@@ -4,10 +4,11 @@ import { ZzimController } from './zzim.controller';
 import { DatabaseModule } from 'src/database/database.module';
 import { TokenModule } from 'src/token/token.module';
 import { zzimProviders } from './providers/zzim.provider';
+import { ZzimRepository } from './zzim.repository';
 
 @Module({
   imports: [DatabaseModule, TokenModule],
   controllers: [ZzimController],
-  providers: [...zzimProviders, ZzimService],
+  providers: [...zzimProviders, ZzimRepository, ZzimService],
 })
 export class ZzimModule {}
