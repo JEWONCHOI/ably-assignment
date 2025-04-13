@@ -6,14 +6,22 @@ import { DataSource } from 'typeorm';
 import { AllExceptionsFilter } from 'src/common/filters';
 import { ResponseInterceptor } from 'src/common/interceptors';
 import { generateRandomString } from 'src/common/utils/function';
-import { registerAndLoginTestUser, userCreateDrawer } from './helper';
+import {
+  createZzim,
+  loginUser,
+  registerAndLoginTestUser,
+  userCreateDrawer,
+} from './helper';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
+import { ProductRepository } from 'src/product/product.repository';
 
 describe('Drawer API Test', () => {
   let app: INestApplication;
   let dataSource: DataSource;
   let accessToken: string;
   let anonymousToken: string;
+  let anonymousDrawerId: number;
+  let productRepository: ProductRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -40,6 +48,10 @@ describe('Drawer API Test', () => {
 
     const anonymousUserResponse = await registerAndLoginTestUser(app);
     anonymousToken = anonymousUserResponse.accessToken;
+    const anonymousDrawer = await userCreateDrawer(app, anonymousToken);
+    anonymousDrawerId = anonymousDrawer.id;
+
+    productRepository = moduleFixture.get<ProductRepository>(ProductRepository);
   });
 
   afterAll(async () => {
@@ -166,5 +178,58 @@ describe('Drawer API Test', () => {
       expect(reverseDrawer.id).toEqual(curSaveDrawer.id);
       expect(reverseDrawer.name).toEqual(curSaveDrawer.name);
     }
+  });
+
+  it('[sucess] 자신의 찜박스 내부의 찜 아이템 목록을 조회한다', async () => {
+    const loginResponse = await registerAndLoginTestUser(app);
+    const newUserAccessToken = loginResponse.accessToken;
+
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    await createZzim(app, newDrawer.id, newUserAccessToken, 1);
+
+    const res = await request(app.getHttpServer())
+      .get(`/v1/drawer/${newDrawer.id}/zzim?size=10`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const existingProduct = await productRepository.gerProductById(1);
+
+    const drawer = res.body.data.drawer;
+    const zzimProductInDrawer = res.body.data.zzims.data[0];
+    const zzimPaginationMeta = res.body.data.zzims.meta;
+    expect(drawer.id).toEqual(newDrawer.id);
+    expect(drawer.name).toEqual(newDrawer.name);
+    expect(zzimProductInDrawer.product_id).toEqual(existingProduct.id);
+    expect(zzimProductInDrawer.name).toEqual(existingProduct.name);
+    expect(zzimProductInDrawer.price).toEqual(existingProduct.price);
+    expect(zzimPaginationMeta.nextCursor).toEqual(null);
+    expect(zzimPaginationMeta.hasNext).toEqual(false);
+    expect(zzimPaginationMeta.size).toEqual(10);
+  });
+
+  it('[fail] 존재하지 않는 찜박스 내부의 찜 아이템을 조회하려고 할 때 404', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/v1/drawer/50000/zzim?size=10`)
+      .set('Authorization', `Bearer ${anonymousToken}`)
+      .expect(404);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(
+      EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND,
+    );
+  });
+
+  it('[fail] 내 찜박스가 아닌 찜박스의 내부의 찜 아이템을 조회하려고 할 때 403', async () => {
+    const resLogin = registerAndLoginTestUser(app);
+    const newUserAccessToken = (await resLogin).accessToken;
+
+    const res = await request(app.getHttpServer())
+      .get(`/v1/drawer/${anonymousDrawerId}/zzim?size=10`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(403);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER);
   });
 });
