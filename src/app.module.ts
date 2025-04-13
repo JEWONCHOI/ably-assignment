@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { DrawerModule } from './drawer/drawer.module';
 import { ZzimModule } from './zzim/zzim.module';
+import { ZzimItemModule } from './zzim-item/zzim-item.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ZzimModule } from './zzim/zzim.module';
     ProductModule,
     DrawerModule,
     ZzimModule,
+    ZzimItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],
