@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Zzim } from './zzim.entity';
 
 @Entity({ name: 'product' })
 export class Product {
@@ -22,4 +23,9 @@ export class Product {
     name: 'thumbnail',
   })
   thumbnail: string;
+
+  @OneToMany(() => Zzim, (zzim) => zzim.product, {
+    createForeignKeyConstraints: false,
+  })
+  zzims: Zzim[];
 }

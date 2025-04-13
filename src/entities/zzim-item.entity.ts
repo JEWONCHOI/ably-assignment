@@ -5,19 +5,16 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { Zzim } from './zzim.entity';
 
-@Entity({ name: 'drawer' })
-export class Drawer {
+@Entity({ name: 'zzim_item ' })
+export class ZzimItem {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
   @Column({
     type: 'varchar',
     name: 'name',
@@ -25,18 +22,18 @@ export class Drawer {
   name: string;
 
   @Column({
-    type: 'json',
-    nullable: false,
+    type: 'int',
+    name: 'price',
   })
-  thumbnails: string[];
+  price: number;
 
   @Column({
-    type: 'int',
-    default: 0,
+    type: 'varchar',
+    name: 'thumbnail',
   })
-  zzim_count: number;
+  thumbnail: string;
 
-  @ManyToOne(() => User, (user) => user.drawers, {
+  @ManyToOne(() => User, (user) => user.zzimItems, {
     createForeignKeyConstraints: false,
   })
   @JoinColumn({
@@ -50,11 +47,6 @@ export class Drawer {
     type: 'int',
   })
   user_id: number;
-
-  @OneToMany(() => Zzim, (zzim) => zzim.drawer, {
-    createForeignKeyConstraints: false,
-  })
-  zzims: Zzim[];
 
   @CreateDateColumn()
   created_at: string;
