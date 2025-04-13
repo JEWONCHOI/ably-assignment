@@ -2,7 +2,7 @@ import { zzimItemProviders } from './../zzim-item/providers/zzim-item.provider';
 import { ZzimItemRepository } from './../zzim-item/zzim-item.repository';
 import { HttpException, Injectable } from '@nestjs/common';
 import { ZzimRepository } from './zzim.repository';
-import { CreateZzimDto } from './dto/create-zzim.dto';
+import { CreateZzimDto, CreateZzimResponse } from './dto/create-zzim.dto';
 import { ProductRepository } from 'src/product/product.repository';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { DrawerRepository } from 'src/drawer/drawer.repository';
@@ -24,7 +24,7 @@ export class ZzimService {
     userId: number,
     productId: number,
     createZzimDto: CreateZzimDto,
-  ): Promise<Zzim> {
+  ): Promise<CreateZzimResponse> {
     const existingProduct =
       await this.productRepoitory.gerProductById(productId);
 
@@ -89,6 +89,11 @@ export class ZzimService {
       }),
     ]);
 
-    return zzim;
+    return {
+      id: zzim.id,
+      drawer_id: zzim.drawer_id,
+      product_id: zzim.product_id,
+      user_id: zzim.user_id,
+    };
   }
 }

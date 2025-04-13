@@ -1,21 +1,23 @@
 import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ZzimService } from './zzim.service';
-import { CreateZzimDto } from './dto/create-zzim.dto';
+import { CreateZzimDto, CreateZzimResponse } from './dto/create-zzim.dto';
 import { Request } from 'express';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { Zzim } from 'src/entities/zzim.entity';
+import { CreateZzimDocs } from 'src/docs/decorators/zzim.decorator';
 
 @UseGuards(AuthGuard)
 @Controller('zzim')
 export class ZzimController {
   constructor(private readonly zzimService: ZzimService) {}
 
+  @CreateZzimDocs()
   @Post(':productId')
   async createZzim(
     @Req() req: Request,
     @Param('productId') productId: number,
     @Body() createZzimDto: CreateZzimDto,
-  ): Promise<Zzim> {
+  ): Promise<CreateZzimResponse> {
     return await this.zzimService.createZzim(
       req.user.id,
       productId,
