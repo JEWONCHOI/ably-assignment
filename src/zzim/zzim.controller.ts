@@ -12,7 +12,10 @@ import { CreateZzimDto, CreateZzimResponse } from './dto/create-zzim.dto';
 import { Request } from 'express';
 import { AuthGuard } from 'src/common/guard/auth.guard';
 import { Zzim } from 'src/entities/zzim.entity';
-import { CreateZzimDocs } from 'src/docs/decorators/zzim.decorator';
+import {
+  CreateZzimDocs,
+  DeleteZzimDos,
+} from 'src/docs/decorators/zzim.decorator';
 
 @UseGuards(AuthGuard)
 @Controller('zzim')
@@ -33,6 +36,7 @@ export class ZzimController {
     );
   }
 
+  @DeleteZzimDos()
   @Delete(':zzimId')
   async deleteZzim(
     @Req() req: Request,

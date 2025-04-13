@@ -2,6 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import {
   ApiConflictResponse,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -10,8 +11,6 @@ import {
 import { exceptionForm } from '../example/form/exception.form';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { successForm } from '../example/form/success.form';
-import { UserInfoResponse } from 'src/user/dto/user-info.dto';
-
 import { ApiResponse } from '@nestjs/swagger';
 import { CreateZzimResponse } from 'src/zzim/dto/create-zzim.dto';
 import { CREATE_ZZIM_RESPONSE_DATA } from '../example/data/zzim';
@@ -64,6 +63,41 @@ export function CreateZzimDocs() {
     }),
     ApiUnauthorizedResponse({
       description: '찜을 저장하는 찜박스가 내 찜 박스가 아닌 경우',
+      example: exceptionForm(
+        '/v1/zzim/3',
+        409,
+        EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER,
+      ),
+    }),
+  );
+}
+
+export function DeleteZzimDos() {
+  return applyDecorators(
+    ApiTags('Zzim'),
+    ApiOperation({
+      summary: 'Delete Zzim API',
+      description: '찜을 제거합니다',
+    }),
+    ApiOkResponse({
+      description: '찜을 성공적으로 제거합니다',
+      schema: {
+        example: 'OK',
+        type: 'string',
+        nullable: false,
+      },
+      example: successForm('/v1/zzim/{zzimId}', 200, 'OK'),
+    }),
+    ApiNotFoundResponse({
+      description: '해당 찜이 존재하지 않는 경우',
+      example: exceptionForm(
+        '/v1/zzim/3',
+        404,
+        EXCEPTION_MESSAGE.ZZIM.NOT_FOUND_ZZIM,
+      ),
+    }),
+    ApiUnauthorizedResponse({
+      description: '해당 찜이 본인의 것이 아닌 경우',
       example: exceptionForm(
         '/v1/zzim/3',
         409,
