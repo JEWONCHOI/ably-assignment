@@ -10,5 +10,6 @@ import { DrawerRepository } from './drawer.repository';
   imports: [DatabaseModule, TokenModule],
   controllers: [DrawerController],
   providers: [...drawerProviders, DrawerRepository, DrawerService],
+  exports: [DrawerRepository],
 })
 export class DrawerModule {}

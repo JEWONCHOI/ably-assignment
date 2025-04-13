@@ -81,6 +81,42 @@ export class DrawerRepository {
 
   /**
    *
+   * @param userId User Unique Key
+   * @param drawerId Drawer Unique Key
+   * @param thumbnails Drawer Thumbnail Image
+   */
+  async updateDrawerThumbnails(
+    userId: number,
+    drawerId: number,
+    thumbnails: string[],
+  ): Promise<string> {
+    this.drawerRepository.update(
+      { id: drawerId, user_id: userId },
+      { thumbnails },
+    );
+    return 'OK';
+  }
+
+  /**
+   *
+   * @param userId User Unique Key
+   * @param drawerId Drawer Unique Key
+   * @returns
+   */
+  async incrementDrawerZzimCount(
+    userId: number,
+    drawerId: number,
+  ): Promise<string> {
+    await this.drawerRepository.increment(
+      { id: drawerId, user_id: userId },
+      'zzim_count',
+      1,
+    );
+    return 'OK';
+  }
+
+  /**
+   *
    * @param drawerId 박스 Unique Key
    * @param userId 유저 Unique KEy
    */

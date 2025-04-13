@@ -5,6 +5,7 @@ import { ZzimItemRepository } from './zzim-item.repository';
 
 @Module({
   imports: [DatabaseModule],
-  providers: [...zzimItemProviders, ZzimItemRepository],
+  providers: [...zzimItemProviders, ZzimItemRepository, ZzimItemRepository],
+  exports: [ZzimItemRepository],
 })
 export class ZzimItemModule {}
