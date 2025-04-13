@@ -86,6 +86,7 @@ export class ZzimService {
         price: existingProduct.price,
         thumbnail: existingProduct.thumbnail,
         user_id: userId,
+        drawer_id: createZzimDto.drawer_id,
       }),
     ]);
 
@@ -95,5 +96,58 @@ export class ZzimService {
       product_id: zzim.product_id,
       user_id: zzim.user_id,
     };
+  }
+
+  async deleteZzim(userId: number, zzimId: number): Promise<string> {
+    const existingZzim = await this.zzimRepository.getZzimById(zzimId);
+
+    if (!existingZzim) {
+      throw new HttpException(EXCEPTION_MESSAGE.ZZIM.NOT_FOUND_ZZIM, 404);
+    }
+
+    if (existingZzim.user_id !== userId) {
+      throw new HttpException(EXCEPTION_MESSAGE.ZZIM.NOT_MY_ZZIM, 404);
+    }
+
+    const thumbnails = await this.calculateThumbnailImageWhenDeleteZzim(
+      existingZzim,
+      userId,
+    );
+
+    await Promise.all([
+      this.zzimRepository.deleteZzim(userId, zzimId),
+      this.zzimItemRepository.deleteMyZzimItem(userId, existingZzim.product_id),
+      this.drawerRepository.decreseDrawerZzimCount(
+        userId,
+        existingZzim.drawer_id,
+      ),
+      this.drawerRepository.updateDrawerThumbnails(
+        userId,
+        existingZzim.drawer_id,
+        thumbnails,
+      ),
+    ]);
+
+    return 'OK';
+  }
+
+  private async calculateThumbnailImageWhenDeleteZzim(
+    zzim: Zzim,
+    userId: number,
+  ): Promise<string[]> {
+    const zzimItems = await this.zzimItemRepository.getMyZzimItemListByDrawerId(
+      zzim.drawer_id,
+      userId,
+    );
+
+    const remainingItems = zzimItems.filter(
+      (item) => item.product_id !== zzim.product_id,
+    );
+
+    const thumbnails = remainingItems
+      .slice(0, this.MAX_DRAWER_THUMBNAIL_LENGTH)
+      .map((item) => item.thumbnail);
+
+    return thumbnails;
   }
 }

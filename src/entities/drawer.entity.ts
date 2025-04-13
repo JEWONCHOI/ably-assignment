@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Zzim } from './zzim.entity';
+import { ZzimItem } from './zzim-item.entity';
 
 @Entity({ name: 'drawer' })
 export class Drawer {
@@ -55,6 +56,11 @@ export class Drawer {
     createForeignKeyConstraints: false,
   })
   zzims: Zzim[];
+
+  @OneToMany(() => ZzimItem, (zzimItem) => zzimItem.drawer, {
+    createForeignKeyConstraints: false,
+  })
+  zzimItems: Zzim[];
 
   @CreateDateColumn()
   created_at: string;

@@ -117,6 +117,24 @@ export class DrawerRepository {
 
   /**
    *
+   * @param userId
+   * @param drawerId
+   * @returns
+   */
+  async decreseDrawerZzimCount(
+    userId: number,
+    drawerId: number,
+  ): Promise<string> {
+    await this.drawerRepository.decrement(
+      { id: drawerId, user_id: userId },
+      'zzim_count',
+      1,
+    );
+    return 'OK';
+  }
+
+  /**
+   *
    * @param drawerId 박스 Unique Key
    * @param userId 유저 Unique KEy
    */

@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ZzimService } from './zzim.service';
 import { CreateZzimDto, CreateZzimResponse } from './dto/create-zzim.dto';
 import { Request } from 'express';
@@ -23,5 +31,13 @@ export class ZzimController {
       productId,
       createZzimDto,
     );
+  }
+
+  @Delete(':zzimId')
+  async deleteZzim(
+    @Req() req: Request,
+    @Param('zzimId') zzimId: number,
+  ): Promise<string> {
+    return await this.zzimService.deleteZzim(req.user.id, zzimId);
   }
 }

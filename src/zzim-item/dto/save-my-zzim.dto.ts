@@ -19,4 +19,7 @@ export class SaveMyZzimItemDto {
 
   @ApiProperty({ description: 'User Unique Key', example: 1 })
   user_id: number;
+
+  @ApiProperty({ description: 'Drawer Unique Key', example: 1 })
+  drawer_id: number;
 }

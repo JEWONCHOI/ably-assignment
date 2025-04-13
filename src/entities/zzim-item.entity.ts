@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Product } from './product.entity';
+import { Drawer } from './drawer.entity';
 
 @Index('user_zzim_product', ['user_id', 'product_id'])
 @Entity({ name: 'zzim_item' })
@@ -65,6 +66,22 @@ export class ZzimItem {
     name: 'product_id',
   })
   product_id: number;
+
+  @ManyToOne(() => Drawer, (drawer) => drawer.zzimItems, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
+    referencedColumnName: 'id',
+    name: 'drawer_id',
+  })
+  drawer: Drawer;
+
+  @Index()
+  @Column({
+    type: 'int',
+    name: 'drawer_id',
+  })
+  drawer_id: number;
 
   @CreateDateColumn()
   created_at: string;

@@ -23,6 +23,17 @@ export class ZzimRepository {
 
   /**
    *
+   * @param zzimId Zzim Unique Key
+   * @returns Zzim
+   */
+  async getZzimById(zzimId: number): Promise<Zzim> {
+    return await this.zzimRepository.findOne({
+      where: { id: zzimId },
+    });
+  }
+
+  /**
+   *
    * @param userId User Unique key
    * @param drawerId Drawer Unique Key
    * @param productId Product Unique Key
@@ -38,5 +49,10 @@ export class ZzimRepository {
       drawer_id: drawerId,
       product_id: productId,
     });
+  }
+
+  async deleteZzim(userId: number, zzimId: number): Promise<string> {
+    await this.zzimRepository.delete({ user_id: userId, id: zzimId });
+    return 'OK';
   }
 }
