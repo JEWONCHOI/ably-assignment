@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 
 export const zzimItemProviders = [
   {
-    provide: 'ZZIM_ITEM_PROVIDERS',
+    provide: 'ZZIM_ITEM_REPOSITORY',
     useFactory: (dataSource: DataSource) => dataSource.getRepository(ZzimItem),
     inject: ['DATA_SOURCE'],
   },

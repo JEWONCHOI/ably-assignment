@@ -10,10 +10,18 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 
-@Entity({ name: 'zzim_item ' })
+@Index('user_zzim_product', ['user_id', 'product_id'])
+@Entity({ name: 'zzim_item' })
 export class ZzimItem {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Index()
+  @Column({
+    type: 'varchar',
+    name: 'product_id',
+  })
+  product_id: number;
 
   @Column({
     type: 'varchar',
