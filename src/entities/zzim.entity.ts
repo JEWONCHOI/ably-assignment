@@ -8,29 +8,33 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Drawer } from './drawer.entity';
 import { User } from './user.entity';
 import { Product } from './product.entity';
+import { Drawer } from './drawer.entity';
 
+@Index('user_zzim_product', ['user_id', 'product_id'])
 @Entity({ name: 'zzim' })
 export class Zzim {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Drawer, (drawer) => drawer.zzims, {
-    createForeignKeyConstraints: false,
+  @Column({
+    type: 'varchar',
+    name: 'name',
   })
-  @JoinColumn({
-    referencedColumnName: 'id',
-    name: 'drawer_id',
-  })
-  drawer: Drawer;
+  name: string;
 
-  @Index()
   @Column({
     type: 'int',
+    name: 'price',
   })
-  drawer_id: number;
+  price: number;
+
+  @Column({
+    type: 'varchar',
+    name: 'thumbnail',
+  })
+  thumbnail: string;
 
   @ManyToOne(() => User, (user) => user.zzims, {
     createForeignKeyConstraints: false,
@@ -59,8 +63,25 @@ export class Zzim {
   @Index()
   @Column({
     type: 'int',
+    name: 'product_id',
   })
   product_id: number;
+
+  @ManyToOne(() => Drawer, (drawer) => drawer.zzims, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
+    referencedColumnName: 'id',
+    name: 'drawer_id',
+  })
+  drawer: Drawer;
+
+  @Index()
+  @Column({
+    type: 'int',
+    name: 'drawer_id',
+  })
+  drawer_id: number;
 
   @CreateDateColumn()
   created_at: string;

@@ -7,7 +7,6 @@ import {
 } from 'typeorm';
 import { Drawer } from './drawer.entity';
 import { Zzim } from './zzim.entity';
-import { ZzimItem } from './zzim-item.entity';
 
 @Entity({ name: 'user' })
 @Index('email_index', ['email'])
@@ -43,9 +42,4 @@ export class User {
     createForeignKeyConstraints: false,
   })
   zzims: Zzim[];
-
-  @OneToMany(() => ZzimItem, (zzimItem) => zzimItem.user, {
-    createForeignKeyConstraints: false,
-  })
-  zzimItems: ZzimItem[];
 }

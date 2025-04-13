@@ -1,5 +1,3 @@
-import { zzimItemProviders } from './../zzim-item/providers/zzim-item.provider';
-import { ZzimItemRepository } from './../zzim-item/zzim-item.repository';
 import { HttpException, Injectable } from '@nestjs/common';
 import { ZzimRepository } from './zzim.repository';
 import { CreateZzimDto, CreateZzimResponse } from './dto/create-zzim.dto';
@@ -13,7 +11,6 @@ export class ZzimService {
   private readonly MAX_DRAWER_THUMBNAIL_LENGTH: number;
   constructor(
     private readonly zzimRepository: ZzimRepository,
-    private readonly zzimItemRepository: ZzimItemRepository,
     private readonly drawerRepository: DrawerRepository,
     private readonly productRepoitory: ProductRepository,
   ) {
@@ -61,7 +58,7 @@ export class ZzimService {
       : [existingProduct.thumbnail, ...exisitingDrawer.thumbnails];
 
     // query 병렬 처리
-    const [_, __, zzim, ___] = await Promise.all([
+    const [_, __, zzim] = await Promise.all([
       // drawer zzim count increment
       this.drawerRepository.incrementDrawerZzimCount(
         userId,
@@ -73,14 +70,9 @@ export class ZzimService {
         createZzimDto.drawer_id,
         setDrawerThumbnailsArray,
       ),
-      // save zzim in drawer
-      this.zzimRepository.saveZzim(
-        userId,
-        createZzimDto.drawer_id,
-        existingProduct.id,
-      ),
+
       // save zzim item
-      this.zzimItemRepository.saveMyZzimItem({
+      this.zzimRepository.saveZzim({
         product_id: existingProduct.id,
         name: existingProduct.name,
         price: existingProduct.price,
@@ -116,7 +108,6 @@ export class ZzimService {
 
     await Promise.all([
       this.zzimRepository.deleteZzim(userId, zzimId),
-      this.zzimItemRepository.deleteMyZzimItem(userId, existingZzim.product_id),
       this.drawerRepository.decreseDrawerZzimCount(
         userId,
         existingZzim.drawer_id,
@@ -135,7 +126,7 @@ export class ZzimService {
     zzim: Zzim,
     userId: number,
   ): Promise<string[]> {
-    const zzimItems = await this.zzimItemRepository.getMyZzimItemListByDrawerId(
+    const zzimItems = await this.zzimRepository.getZzimByDrawerId(
       zzim.drawer_id,
       userId,
     );

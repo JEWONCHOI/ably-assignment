@@ -7,14 +7,12 @@ import { zzimProviders } from './providers/zzim.provider';
 import { ZzimRepository } from './zzim.repository';
 import { ProductModule } from 'src/product/product.module';
 import { DrawerModule } from 'src/drawer/drawer.module';
-import { ZzimItemModule } from 'src/zzim-item/zzim-item.module';
 
 @Module({
   imports: [
     forwardRef(() => ProductModule),
     DatabaseModule,
     TokenModule,
-    ZzimItemModule,
     DrawerModule,
   ],
   controllers: [ZzimController],

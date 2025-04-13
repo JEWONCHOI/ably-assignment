@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Zzim } from './zzim.entity';
-import { ZzimItem } from './zzim-item.entity';
 
 @Entity({ name: 'product' })
 export class Product {
@@ -29,9 +28,4 @@ export class Product {
     createForeignKeyConstraints: false,
   })
   zzims: Zzim[];
-
-  @OneToMany(() => ZzimItem, (zzimItem) => zzimItem.product, {
-    createForeignKeyConstraints: false,
-  })
-  zzimItems: ZzimItem[];
 }

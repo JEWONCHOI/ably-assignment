@@ -15,14 +15,14 @@ import {
 import { DrawerRepository } from 'src/drawer/drawer.repository';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { ProductRepository } from 'src/product/product.repository';
-import { ZzimItemRepository } from 'src/zzim-item/zzim-item.repository';
+import { ZzimRepository } from 'src/zzim/zzim.repository';
 
 describe('ZZIM API Test', () => {
   let app: INestApplication;
   let dataSource: DataSource;
   let drawerRepository: DrawerRepository;
   let productRepository: ProductRepository;
-  let zzimItemRepository: ZzimItemRepository;
+  let zzimRepository: ZzimRepository;
   let anonymousDrawerId: number;
   let anonymouseAccessToken: string;
 
@@ -56,8 +56,7 @@ describe('ZZIM API Test', () => {
 
     drawerRepository = moduleFixture.get<DrawerRepository>(DrawerRepository);
     productRepository = moduleFixture.get<ProductRepository>(ProductRepository);
-    zzimItemRepository =
-      moduleFixture.get<ZzimItemRepository>(ZzimItemRepository);
+    zzimRepository = moduleFixture.get<ZzimRepository>(ZzimRepository);
   });
 
   it('[success] 유저가 성공적으로 찜을 생성한다', async () => {
@@ -220,7 +219,7 @@ describe('ZZIM API Test', () => {
       .expect(200);
 
     const drawer = await drawerRepository.getDrawerById(newDrawer.id);
-    const zzimItems = await zzimItemRepository.getMyZzimItemListByDrawerId(
+    const zzimItems = await zzimRepository.getZzimByDrawerId(
       newDrawer.id,
       newUser.id,
     );

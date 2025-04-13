@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Zzim } from 'src/entities/zzim.entity';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
+import { SaveZzimDto } from './providers/save-zzim.dto';
 
 @Injectable()
 export class ZzimRepository {
@@ -32,23 +33,20 @@ export class ZzimRepository {
     });
   }
 
+  async getZzimByDrawerId(drawerId: number, userId: number): Promise<Zzim[]> {
+    return await this.zzimRepository.find({
+      where: { drawer_id: drawerId, user_id: userId },
+      order: { created_at: 'DESC' },
+    });
+  }
+
   /**
    *
-   * @param userId User Unique key
-   * @param drawerId Drawer Unique Key
-   * @param productId Product Unique Key
-   * @returns Zzim
+   * @param saveZzimDto zzim 객체
+   * @returns zzim
    */
-  async saveZzim(
-    userId: number,
-    drawerId: number,
-    productId: number,
-  ): Promise<Zzim> {
-    return await this.zzimRepository.save({
-      user_id: userId,
-      drawer_id: drawerId,
-      product_id: productId,
-    });
+  async saveZzim(saveZzimDto: SaveZzimDto): Promise<Zzim> {
+    return await this.zzimRepository.save(saveZzimDto);
   }
 
   async deleteZzim(userId: number, zzimId: number): Promise<string> {

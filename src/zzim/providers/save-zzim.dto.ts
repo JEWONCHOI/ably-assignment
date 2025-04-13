@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column } from 'typeorm';
 
-export class SaveMyZzimItemDto {
+export class SaveZzimDto {
   @ApiProperty({ description: 'Product Uique Key', example: 1 })
   product_id: number;
 
