@@ -9,19 +9,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Product } from './product.entity';
 
 @Index('user_zzim_product', ['user_id', 'product_id'])
 @Entity({ name: 'zzim_item' })
 export class ZzimItem {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Index()
-  @Column({
-    type: 'varchar',
-    name: 'product_id',
-  })
-  product_id: number;
 
   @Column({
     type: 'varchar',
@@ -55,6 +49,22 @@ export class ZzimItem {
     type: 'int',
   })
   user_id: number;
+
+  @ManyToOne(() => Product, (product) => product.zzimItems, {
+    createForeignKeyConstraints: false,
+  })
+  @JoinColumn({
+    referencedColumnName: 'id',
+    name: 'product_id',
+  })
+  product: Product;
+
+  @Index()
+  @Column({
+    type: 'int',
+    name: 'product_id',
+  })
+  product_id: number;
 
   @CreateDateColumn()
   created_at: string;
