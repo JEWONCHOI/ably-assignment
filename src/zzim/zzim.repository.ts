@@ -47,7 +47,7 @@ export class ZzimRepository {
   ) {
     return await this.zzimRepository.find({
       where: {
-        created_at: cursorSearchQuery.cursor
+        id: cursorSearchQuery.cursor
           ? LessThan(cursorSearchQuery.cursor)
           : undefined,
         user_id: userId,
@@ -59,12 +59,12 @@ export class ZzimRepository {
 
   async getMyZzzimWithPaginationById(
     drawerId: number,
-    cursor: string,
+    cursor: number,
     size: number,
   ): Promise<Zzim[]> {
     return await this.zzimRepository.find({
       where: {
-        created_at: cursor ? LessThan(cursor) : undefined,
+        id: cursor ? LessThan(cursor) : undefined,
         drawer_id: drawerId,
       },
       order: { created_at: 'DESC' },

@@ -290,4 +290,77 @@ describe('ZZIM API Test', () => {
     expect(res.body).toHaveProperty('message');
     expect(res.body.message).toContain(EXCEPTION_MESSAGE.ZZIM.NOT_MY_ZZIM);
   });
+
+  it('[success] 자신이 찜을 한 모든 아이템을 수령한다', async () => {
+    const newUser = await registerUser(app);
+    const userLoginInfo = await loginUser(app, newUser);
+
+    const newUserAccessToken = userLoginInfo.accessToken;
+
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    const items = [];
+
+    for (let i = 1; i < 5; i++) {
+      await createZzim(app, newDrawer.id, newUserAccessToken, i);
+      items.push(productRepository.gerProductById(i));
+    }
+
+    const res = await request(app.getHttpServer())
+      .get(`/v1/zzim?size=10`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const zzimItems = res.body.data.data;
+    const pagiantaionMetaData = res.body.data.meta;
+
+    for (let i = 0; i < items.length; i++) {
+      const product = await items[items.length - 1 - i];
+      expect(zzimItems[i].product_id).toEqual(product.id);
+      expect(zzimItems[i].name).toEqual(product.name);
+      expect(zzimItems[i].price).toEqual(product.price);
+    }
+
+    expect(pagiantaionMetaData.nextCursor).toEqual(null);
+    expect(pagiantaionMetaData.hasNext).toEqual(false);
+    expect(pagiantaionMetaData.size).toEqual(10);
+  });
+
+  it('[success] 커서 기반 zzim 목록 페이징 조회', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
+
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    for (let i = 1; i <= 4; i++) {
+      await createZzim(app, newDrawer.id, newUserAccessToken, i);
+    }
+
+    const firstResponse = await request(app.getHttpServer())
+      .get(`/v1/zzim?size=2`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const firstItems = firstResponse.body.data.data;
+    const nextCursor = firstResponse.body.data.meta.nextCursor;
+
+    expect(firstItems).toHaveLength(2);
+    expect(typeof nextCursor).toBe('number');
+
+    const secondResponse = await request(app.getHttpServer())
+      .get(`/v1/zzim?size=2&cursor=${nextCursor}`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const secondItems = secondResponse.body.data.data;
+
+    expect(secondItems).toHaveLength(2);
+    expect(secondItems[0].id).toBeLessThan(nextCursor);
+    expect(secondItems[1].id).toBeLessThan(secondItems[0].id);
+
+    const allItems = [...firstItems, ...secondItems];
+    for (let i = 1; i < allItems.length; i++) {
+      expect(allItems[i].id).toBeLessThan(allItems[i - 1].id);
+    }
+  });
 });
