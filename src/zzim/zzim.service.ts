@@ -7,6 +7,8 @@ import { DrawerRepository } from 'src/drawer/drawer.repository';
 import { Zzim } from 'src/entities/zzim.entity';
 import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 import { changeCursorPagiForm } from 'src/common/utils/pagiantaion-from';
+import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
+import { ZzimItemResponseDto } from './dto/zzim.dto';
 
 @Injectable()
 export class ZzimService {
@@ -92,7 +94,10 @@ export class ZzimService {
     };
   }
 
-  async getZzimList(userId: number, cursorSearchQuery: CursorSearchQuery) {
+  async getZzimList(
+    userId: number,
+    cursorSearchQuery: CursorSearchQuery,
+  ): Promise<ChangeCursorPagiFormResponse<ZzimItemResponseDto>> {
     const zzimList = await this.zzimRepository.getMyZzimListWithPagination(
       userId,
       cursorSearchQuery,

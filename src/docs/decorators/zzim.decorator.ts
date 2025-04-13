@@ -13,7 +13,12 @@ import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { successForm } from '../example/form/success.form';
 import { ApiResponse } from '@nestjs/swagger';
 import { CreateZzimResponse } from 'src/zzim/dto/create-zzim.dto';
-import { CREATE_ZZIM_RESPONSE_DATA } from '../example/data/zzim';
+import {
+  CREATE_ZZIM_RESPONSE_DATA,
+  GET_ZZIM_LIST_DATA,
+} from '../example/data/zzim';
+import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
+import { ZzimItemResponseDto } from 'src/zzim/dto/zzim.dto';
 
 export function CreateZzimDocs() {
   return applyDecorators(
@@ -72,6 +77,21 @@ export function CreateZzimDocs() {
         409,
         EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER,
       ),
+    }),
+  );
+}
+
+export function GetZzimListDocs() {
+  return applyDecorators(
+    ApiTags('Zzim'),
+    ApiOperation({
+      summary: 'Get Zzim Items API',
+      description: '찜한 아이템 목록을 조회합니다',
+    }),
+    ApiOkResponse({
+      description: '찜 아이템 목록을 조회힙니다',
+      type: ChangeCursorPagiFormResponse<ZzimItemResponseDto>,
+      example: successForm('/v1/zzim', 200, GET_ZZIM_LIST_DATA),
     }),
   );
 }
