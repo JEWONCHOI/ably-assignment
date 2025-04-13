@@ -24,6 +24,7 @@ describe('ZZIM API Test', () => {
   let productRepository: ProductRepository;
   let zzimItemRepository: ZzimItemRepository;
   let anonymousDrawerId: number;
+  let anonymouseAccessToken: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -46,10 +47,10 @@ describe('ZZIM API Test', () => {
     dataSource = app.get<DataSource>('DATA_SOURCE');
 
     const anonymousLogin = await registerAndLoginTestUser(app);
-    const anonymousAccessToken = anonymousLogin.accessToken;
+    anonymouseAccessToken = anonymousLogin.accessToken;
     const anonymousCreateDrawer = await userCreateDrawer(
       app,
-      anonymousAccessToken,
+      anonymouseAccessToken,
     );
     anonymousDrawerId = anonymousCreateDrawer.id;
 
@@ -201,5 +202,93 @@ describe('ZZIM API Test', () => {
     expect(res.body.message).toContain(
       EXCEPTION_MESSAGE.ZZIM.DUPLICATE_ZZIM_ITEM,
     );
+  });
+
+  it('[success] 찜을 성공적으로 제거합니다 200', async () => {
+    const newUser = await registerUser(app);
+    const userLoginInfo = await loginUser(app, newUser);
+
+    const newUserAccessToken = userLoginInfo.accessToken;
+
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    const newZzim = await createZzim(app, newDrawer.id, newUserAccessToken, 1);
+
+    const res = await request(app.getHttpServer())
+      .delete(`/v1/zzim/${newZzim.id}`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const drawer = await drawerRepository.getDrawerById(newDrawer.id);
+    const zzimItems = await zzimItemRepository.getMyZzimItemListByDrawerId(
+      newDrawer.id,
+      newUser.id,
+    );
+
+    expect(res.body).toHaveProperty('data');
+    expect(res.body.data).toEqual('OK');
+    expect(zzimItems.length).toEqual(0);
+    expect(drawer.zzim_count).toEqual(0);
+    expect(drawer.thumbnails).toEqual([]);
+  });
+
+  it('[success] 5개 이상의 찜이 존재하는 찜박스의 찜을 삭제하면 썸네일 이미지가 최신순으로 정렬됩니다', async () => {
+    const newUser = await registerUser(app);
+    const userLoginInfo = await loginUser(app, newUser);
+
+    const newUserAccessToken = userLoginInfo.accessToken;
+
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    const product = [];
+    const zzim = [];
+
+    for (let i = 1; i < 6; i++) {
+      zzim.push(await createZzim(app, newDrawer.id, newUserAccessToken, i));
+      product.push(await productRepository.gerProductById(i));
+    }
+
+    await request(app.getHttpServer())
+      .delete(`/v1/zzim/${zzim[zzim.length - 1].id}`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const drawer = await drawerRepository.getDrawerById(newDrawer.id);
+
+    const expectedThumbnails = product
+      .slice(0, -1)
+      .reverse()
+      .map((p) => p.thumbnail);
+
+    expect(drawer.thumbnails).toEqual(expectedThumbnails);
+  });
+
+  it('[fail] 존재하지 않는 찜을 조회하는 경우 404', async () => {
+    const res = await request(app.getHttpServer())
+      .delete(`/v1/zzim/30000`)
+      .set('Authorization', `Bearer ${anonymouseAccessToken}`)
+      .expect(404);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(EXCEPTION_MESSAGE.ZZIM.NOT_FOUND_ZZIM);
+  });
+
+  it('[fail] 찜의 주인이 자신이 아닌 경우', async () => {
+    const newUser = await registerUser(app);
+    const userLoginInfo = await loginUser(app, newUser);
+
+    const newUserAccessToken = userLoginInfo.accessToken;
+
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    const zzim = await createZzim(app, newDrawer.id, newUserAccessToken, 1);
+
+    const res = await request(app.getHttpServer())
+      .delete(`/v1/zzim/${zzim.id}`)
+      .set('Authorization', `Bearer ${anonymouseAccessToken}`)
+      .expect(403);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(EXCEPTION_MESSAGE.ZZIM.NOT_MY_ZZIM);
   });
 });

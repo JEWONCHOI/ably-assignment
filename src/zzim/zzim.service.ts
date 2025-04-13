@@ -106,7 +106,7 @@ export class ZzimService {
     }
 
     if (existingZzim.user_id !== userId) {
-      throw new HttpException(EXCEPTION_MESSAGE.ZZIM.NOT_MY_ZZIM, 404);
+      throw new HttpException(EXCEPTION_MESSAGE.ZZIM.NOT_MY_ZZIM, 403);
     }
 
     const thumbnails = await this.calculateThumbnailImageWhenDeleteZzim(
