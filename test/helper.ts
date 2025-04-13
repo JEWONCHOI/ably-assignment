@@ -5,16 +5,44 @@ import {
   generateRandomString,
 } from 'src/common/utils/function';
 import { CreateDrawerResponse } from 'src/drawer/dto/create-drawer.dto';
+import { SignupResponse } from 'src/auth/dto/signup.dto';
 
 export interface TestUserInfo {
   accessToken: string;
+}
+
+const password = 'testpassword';
+
+export async function registerUser(
+  app: INestApplication,
+): Promise<SignupResponse> {
+  const email = generateRandomEmail();
+  const nickname = generateRandomString();
+
+  const res = await request(app.getHttpServer())
+    .post('/v1/auth/signup')
+    .send({ email, nickname, password })
+    .expect(201);
+
+  return { id: res.body.data.id, email, nickname };
+}
+
+export async function loginUser(
+  app: INestApplication,
+  userInfo: SignupResponse,
+) {
+  const res = await request(app.getHttpServer())
+    .post('/v1/auth/signin')
+    .send({ email: userInfo.email, password })
+    .expect(201);
+
+  return { accessToken: res.body.data.accessToken };
 }
 
 export async function registerAndLoginTestUser(
   app: INestApplication,
 ): Promise<TestUserInfo> {
   const email = generateRandomEmail();
-  const password = 'testpassword';
   const nickname = generateRandomString();
 
   await request(app.getHttpServer())
@@ -28,6 +56,20 @@ export async function registerAndLoginTestUser(
     .expect(201);
 
   return { accessToken: res.body.data.accessToken };
+}
+
+export async function createZzim(
+  app: INestApplication,
+  darwerId: number,
+  accessToken: string,
+  productId: number,
+) {
+  return await request(app.getHttpServer())
+    .post(`/v1/zzim/${productId}`)
+    .set('Authorization', `Bearer ${accessToken}`)
+    .send({
+      drawer_id: darwerId,
+    });
 }
 
 export async function userCreateDrawer(
