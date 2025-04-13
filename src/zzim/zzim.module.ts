@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ZzimService } from './zzim.service';
 import { ZzimController } from './zzim.controller';
 import { DatabaseModule } from 'src/database/database.module';
@@ -11,13 +11,14 @@ import { ZzimItemModule } from 'src/zzim-item/zzim-item.module';
 
 @Module({
   imports: [
+    forwardRef(() => ProductModule),
     DatabaseModule,
     TokenModule,
-    ProductModule,
     ZzimItemModule,
     DrawerModule,
   ],
   controllers: [ZzimController],
   providers: [...zzimProviders, ZzimRepository, ZzimService],
+  exports: [ZzimService],
 })
 export class ZzimModule {}

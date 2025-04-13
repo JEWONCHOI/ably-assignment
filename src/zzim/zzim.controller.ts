@@ -22,20 +22,6 @@ import {
 export class ZzimController {
   constructor(private readonly zzimService: ZzimService) {}
 
-  @CreateZzimDocs()
-  @Post(':productId')
-  async createZzim(
-    @Req() req: Request,
-    @Param('productId') productId: number,
-    @Body() createZzimDto: CreateZzimDto,
-  ): Promise<CreateZzimResponse> {
-    return await this.zzimService.createZzim(
-      req.user.id,
-      productId,
-      createZzimDto,
-    );
-  }
-
   @DeleteZzimDos()
   @Delete(':zzimId')
   async deleteZzim(

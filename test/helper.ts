@@ -65,7 +65,7 @@ export async function createZzim(
   productId: number,
 ) {
   const res = await request(app.getHttpServer())
-    .post(`/v1/zzim/${productId}`)
+    .post(`/v1/product/${productId}/zzim`)
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
       drawer_id: darwerId,
