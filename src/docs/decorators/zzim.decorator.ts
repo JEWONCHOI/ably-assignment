@@ -17,7 +17,7 @@ import { CREATE_ZZIM_RESPONSE_DATA } from '../example/data/zzim';
 
 export function CreateZzimDocs() {
   return applyDecorators(
-    ApiTags('Zzim'),
+    ApiTags('Product'),
     ApiOperation({
       summary: 'Create zzim API',
       description: '찜을 생성합니다',
