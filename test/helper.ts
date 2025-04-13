@@ -78,13 +78,11 @@ export async function userCreateDrawer(
   app: INestApplication,
   accessToken: string,
 ): Promise<CreateDrawerResponse> {
-  const boxName = generateRandomString();
-
   const res = await request(app.getHttpServer())
     .post('/v1/drawer')
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
-      name: boxName,
+      name: generateRandomString(),
     })
     .expect(201);
 
