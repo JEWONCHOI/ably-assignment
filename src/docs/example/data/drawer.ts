@@ -4,6 +4,33 @@ export const CREATE_DRAWER_DATA = {
   thumbnails: [],
 };
 
+export const GET_MY_DRAWER_ZZIM_LIST_DATA = {
+  drawer: {
+    id: 414,
+    name: '케이스',
+  },
+  zzims: {
+    data: [
+      {
+        id: 284,
+        name: 'product_0',
+        price: 140500,
+        thumbnail: 'https://image.com/products/thumbnail/product_0.jpeg',
+        user_id: 421,
+        product_id: 1,
+        drawer_id: 414,
+        created_at: '2025-04-13T14:22:33.987Z',
+        updated_at: '2025-04-13T14:22:33.987Z',
+      },
+    ],
+    meta: {
+      nextCursor: null,
+      hasNext: false,
+      size: 15,
+    },
+  },
+};
+
 export const GET_MY_DRAWER_LIST_DATA = {
   drawerList: [
     {

@@ -17,6 +17,7 @@ import {
   CreateDrawerDocs,
   DeleteDrawerDocs,
   GetDrawerDocs,
+  GetMyDrawerZzimListDocs,
 } from 'src/docs/decorators/drawer.decorator';
 import {
   CursorSearchQuery,
@@ -48,6 +49,7 @@ export class DrawerController {
     return await this.drawerService.getMyDrawerList(req.user.id, searchQuery);
   }
 
+  @GetMyDrawerZzimListDocs()
   @Get(':drawerId/zzim')
   async getMyDrawerZzimList(
     @Req() req: Request,

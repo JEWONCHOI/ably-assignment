@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional } from 'class-validator';
 
@@ -15,7 +15,7 @@ export class SearchQuery {
 }
 
 export class CursorSearchQuery {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: '커서 포인트',
     example: '2025-04-13...',
     nullable: true,
