@@ -64,12 +64,14 @@ export async function createZzim(
   accessToken: string,
   productId: number,
 ) {
-  return await request(app.getHttpServer())
+  const res = await request(app.getHttpServer())
     .post(`/v1/zzim/${productId}`)
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
       drawer_id: darwerId,
     });
+
+  return res.body.data;
 }
 
 export async function userCreateDrawer(
