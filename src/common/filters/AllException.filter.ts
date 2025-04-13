@@ -25,6 +25,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     let messages: string[] = [];
 
+    // TODO: 메서드로 빼기
     if (typeof exceptionResponse === 'string') {
       messages = [exceptionResponse];
     } else if (

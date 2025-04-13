@@ -40,6 +40,21 @@ export class ZzimRepository {
     });
   }
 
+  async getMyZzzimWithPaginationById(
+    drawerId: number,
+    cursor: string,
+    size: number,
+  ): Promise<Zzim[]> {
+    return await this.zzimRepository.find({
+      where: {
+        created_at: cursor ? LessThan(cursor) : undefined,
+        drawer_id: drawerId,
+      },
+      order: { created_at: 'DESC' },
+      take: size + 1,
+    });
+  }
+
   /**
    *
    * @param saveZzimDto zzim 객체

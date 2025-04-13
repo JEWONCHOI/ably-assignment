@@ -11,12 +11,12 @@ import { DrawerModule } from 'src/drawer/drawer.module';
 @Module({
   imports: [
     forwardRef(() => ProductModule),
+    forwardRef(() => DrawerModule),
     DatabaseModule,
     TokenModule,
-    DrawerModule,
   ],
   controllers: [ZzimController],
   providers: [...zzimProviders, ZzimRepository, ZzimService],
-  exports: [ZzimService],
+  exports: [ZzimService, ZzimRepository],
 })
 export class ZzimModule {}

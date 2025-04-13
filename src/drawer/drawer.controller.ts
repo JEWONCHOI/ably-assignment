@@ -18,7 +18,12 @@ import {
   DeleteDrawerDocs,
   GetDrawerDocs,
 } from 'src/docs/decorators/drawer.decorator';
-import { SearchQuery } from 'src/common/dto/search-query.dto';
+import {
+  CursorSearchQuery,
+  SearchQuery,
+} from 'src/common/dto/search-query.dto';
+import { ZzimItemResponseDto } from 'src/zzim/dto/zzim.dto';
+import { GetDrawerWithZzimsResponse } from './dto/get-my-drawer-zzim-list.dto';
 
 @UseGuards(AuthGuard)
 @Controller('drawer')
@@ -41,6 +46,19 @@ export class DrawerController {
     @Query() searchQuery: SearchQuery,
   ) {
     return await this.drawerService.getMyDrawerList(req.user.id, searchQuery);
+  }
+
+  @Get(':drawerId/zzim')
+  async getMyDrawerZzimList(
+    @Req() req: Request,
+    @Param('drawerId') drawerId: number,
+    @Query() cursorSearchQuery: CursorSearchQuery,
+  ): Promise<GetDrawerWithZzimsResponse<ZzimItemResponseDto>> {
+    return await this.drawerService.getMyDrawerZzimLits(
+      req.user.id,
+      drawerId,
+      cursorSearchQuery,
+    );
   }
 
   @DeleteDrawerDocs()
