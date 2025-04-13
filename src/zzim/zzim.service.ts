@@ -5,6 +5,8 @@ import { ProductRepository } from 'src/product/product.repository';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { DrawerRepository } from 'src/drawer/drawer.repository';
 import { Zzim } from 'src/entities/zzim.entity';
+import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
+import { changeCursorPagiForm } from 'src/common/utils/pagiantaion-from';
 
 @Injectable()
 export class ZzimService {
@@ -88,6 +90,18 @@ export class ZzimService {
       product_id: zzim.product_id,
       user_id: zzim.user_id,
     };
+  }
+
+  async getZzimList(userId: number, cursorSearchQuery: CursorSearchQuery) {
+    const zzimList = await this.zzimRepository.getMyZzimListWithPagination(
+      userId,
+      cursorSearchQuery,
+    );
+
+    return changeCursorPagiForm({
+      dataList: zzimList,
+      size: cursorSearchQuery.size,
+    });
   }
 
   async deleteZzim(userId: number, zzimId: number): Promise<string> {

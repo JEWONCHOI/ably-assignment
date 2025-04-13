@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Zzim } from 'src/entities/zzim.entity';
 import { LessThan, Repository } from 'typeorm';
 import { SaveZzimDto } from './providers/save-zzim.dto';
+import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 
 @Injectable()
 export class ZzimRepository {
@@ -37,6 +38,22 @@ export class ZzimRepository {
     return await this.zzimRepository.find({
       where: { drawer_id: drawerId, user_id: userId },
       order: { created_at: 'DESC' },
+    });
+  }
+
+  async getMyZzimListWithPagination(
+    userId: number,
+    cursorSearchQuery: CursorSearchQuery,
+  ) {
+    return await this.zzimRepository.find({
+      where: {
+        created_at: cursorSearchQuery.cursor
+          ? LessThan(cursorSearchQuery.cursor)
+          : undefined,
+        user_id: userId,
+      },
+      order: { created_at: 'DESC' },
+      take: cursorSearchQuery.size + 1,
     });
   }
 

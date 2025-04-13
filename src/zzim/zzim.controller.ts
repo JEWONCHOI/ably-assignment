@@ -2,8 +2,10 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,11 +18,20 @@ import {
   CreateZzimDocs,
   DeleteZzimDos,
 } from 'src/docs/decorators/zzim.decorator';
+import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 
 @UseGuards(AuthGuard)
 @Controller('zzim')
 export class ZzimController {
   constructor(private readonly zzimService: ZzimService) {}
+
+  @Get()
+  async getZzimList(
+    @Req() req: Request,
+    @Query() cursorSearchQuery: CursorSearchQuery,
+  ) {
+    return await this.zzimService.getZzimList(req.user.id, cursorSearchQuery);
+  }
 
   @DeleteZzimDos()
   @Delete(':zzimId')
