@@ -16,7 +16,7 @@ export function changePaginationForm<T>(
   };
 }
 
-export function changeCursorPagiForm<T extends { created_at: string }>(
+export function changeCursorPagiForm<T extends { id: number }>(
   changeCursorPagiFormDto: ChangeCursorPagiFormDto<T>,
 ): ChangeCursorPagiFormResponse<T> {
   const { dataList, size } = changeCursorPagiFormDto;
@@ -26,7 +26,7 @@ export function changeCursorPagiForm<T extends { created_at: string }>(
   return {
     data: sliced,
     meta: {
-      nextCursor: hasNext ? sliced[sliced.length - 1].created_at : null,
+      nextCursor: hasNext ? sliced[sliced.length - 1].id : null,
       hasNext,
       size,
     },

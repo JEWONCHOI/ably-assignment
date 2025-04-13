@@ -17,13 +17,13 @@ export class SearchQuery {
 export class CursorSearchQuery {
   @ApiPropertyOptional({
     description: '커서 포인트',
-    example: '2025-04-13...',
+    example: 1,
     nullable: true,
   })
   @IsOptional()
   @Transform(({ value }) => Number(value))
   @IsNumber()
-  cursor: string;
+  cursor: number;
 
   @ApiProperty({ description: 'take size', example: 15 })
   @Transform(({ value }) => Number(value))

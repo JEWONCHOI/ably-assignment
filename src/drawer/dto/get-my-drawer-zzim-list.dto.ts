@@ -9,7 +9,7 @@ class DrawerSimpleInfo {
   name: string;
 }
 
-export class GetDrawerWithZzimsResponse<T extends { created_at: string }> {
+export class GetDrawerWithZzimsResponse<T extends { id: number }> {
   @ApiProperty({ type: DrawerSimpleInfo })
   drawer: DrawerSimpleInfo;
 
