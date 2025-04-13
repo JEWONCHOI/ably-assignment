@@ -6,6 +6,7 @@ import { CreateZzimDto } from './dto/create-zzim.dto';
 import { ProductRepository } from 'src/product/product.repository';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { DrawerRepository } from 'src/drawer/drawer.repository';
+import { Zzim } from 'src/entities/zzim.entity';
 
 @Injectable()
 export class ZzimService {
@@ -23,7 +24,7 @@ export class ZzimService {
     userId: number,
     productId: number,
     createZzimDto: CreateZzimDto,
-  ): Promise<string> {
+  ): Promise<Zzim> {
     const existingProduct =
       await this.productRepoitory.gerProductById(productId);
 
@@ -40,7 +41,9 @@ export class ZzimService {
       throw new HttpException(EXCEPTION_MESSAGE.ZZIM.DUPLICATE_ZZIM_ITEM, 409);
     }
 
-    const exisitingDrawer = await this.drawerRepository.getDrawerById(userId);
+    const exisitingDrawer = await this.drawerRepository.getDrawerById(
+      createZzimDto.drawer_id,
+    );
 
     if (!exisitingDrawer) {
       throw new HttpException(EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND, 404);
@@ -58,7 +61,7 @@ export class ZzimService {
       : [existingProduct.thumbnail, ...exisitingDrawer.thumbnails];
 
     // query 병렬 처리
-    await Promise.all([
+    const [_, __, zzim, ___] = await Promise.all([
       // drawer zzim count increment
       this.drawerRepository.incrementDrawerZzimCount(
         userId,
@@ -71,7 +74,11 @@ export class ZzimService {
         setDrawerThumbnailsArray,
       ),
       // save zzim in drawer
-      this.zzimRepository.saveZzim(userId, createZzimDto.drawer_id, productId),
+      this.zzimRepository.saveZzim(
+        userId,
+        createZzimDto.drawer_id,
+        existingProduct.id,
+      ),
       // save zzim item
       this.zzimItemRepository.saveMyZzimItem({
         product_id: existingProduct.id,
@@ -82,6 +89,6 @@ export class ZzimService {
       }),
     ]);
 
-    return 'OK';
+    return zzim;
   }
 }
