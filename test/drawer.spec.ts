@@ -8,12 +8,13 @@ import { ResponseInterceptor } from 'src/common/interceptors';
 import { generateRandomString } from 'src/common/utils/function';
 import {
   createZzim,
-  loginUser,
   registerAndLoginTestUser,
   userCreateDrawer,
 } from './helper';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { ProductRepository } from 'src/product/product.repository';
+import { DrawerRepository } from 'src/drawer/drawer.repository';
+import { Drawer } from 'src/entities';
 
 describe('Drawer API Test', () => {
   let app: INestApplication;
@@ -22,6 +23,7 @@ describe('Drawer API Test', () => {
   let anonymousToken: string;
   let anonymousDrawerId: number;
   let productRepository: ProductRepository;
+  let drawerRepository: DrawerRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -52,6 +54,7 @@ describe('Drawer API Test', () => {
     anonymousDrawerId = anonymousDrawer.id;
 
     productRepository = moduleFixture.get<ProductRepository>(ProductRepository);
+    drawerRepository = moduleFixture.get<DrawerRepository>(DrawerRepository);
   });
 
   afterAll(async () => {
@@ -185,6 +188,47 @@ describe('Drawer API Test', () => {
     for (let i = 1; i < allItems.length; i++) {
       expect(allItems[i].id).toBeLessThan(allItems[i - 1].id);
     }
+  });
+
+  it('[success] 썸네일 4개 이상이면 최신순 4개만 보여준다', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    for (let i = 1; i <= 5; i++) {
+      await createZzim(app, newDrawer.id, newUserAccessToken, i);
+    }
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/drawer?size=10')
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const drawer = response.body.data.data.find(
+      (drawer: Drawer) => drawer.id === newDrawer.id,
+    );
+    expect(drawer.thumbnails).toHaveLength(4);
+  });
+
+  it('[success] 썸네일 4개 미만이면 최신순 1개만 보여준다', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    for (let i = 1; i <= 2; i++) {
+      await createZzim(app, newDrawer.id, newUserAccessToken, i);
+    }
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/drawer?size=10')
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const drawer = response.body.data.data.find(
+      (drawer: Drawer) => drawer.id === newDrawer.id,
+    );
+
+    expect(drawer.thumbnails).toHaveLength(1);
   });
 
   it('[sucess] 커서기반 찜박스 내부 찜 아이템 목록 페이징 조회', async () => {
