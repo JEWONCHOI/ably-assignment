@@ -79,7 +79,7 @@ export async function userCreateDrawer(
   accessToken: string,
 ): Promise<CreateDrawerResponse> {
   const res = await request(app.getHttpServer())
-    .post('/v1/drawer')
+    .post('/v1/drawers')
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
       name: generateRandomString(),

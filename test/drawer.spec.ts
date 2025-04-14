@@ -67,7 +67,7 @@ describe('Drawer API Test', () => {
   it('[suceess] 찜 서랍을 정상적으로 생성한다', async () => {
     const boxName = generateRandomString();
     const res = await request(app.getHttpServer())
-      .post('/v1/drawer')
+      .post('/v1/drawers')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         name: boxName,
@@ -82,7 +82,7 @@ describe('Drawer API Test', () => {
   it('[fail] 중복된 이름으로 생성한 찜박스는 실패한다', async () => {
     const boxName = generateRandomString();
     await request(app.getHttpServer())
-      .post('/v1/drawer')
+      .post('/v1/drawers')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         name: boxName,
@@ -90,7 +90,7 @@ describe('Drawer API Test', () => {
       .expect(201);
 
     const res = await request(app.getHttpServer())
-      .post('/v1/drawer')
+      .post('/v1/drawers')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         name: boxName,
@@ -107,7 +107,6 @@ describe('Drawer API Test', () => {
     const accessToken = loginRes.accessToken;
 
     const newDrawer = await userCreateDrawer(app, accessToken);
-    console.log('🚀 ~ it ~ newDrawer:', newDrawer);
 
     await Promise.all([
       createZzim(app, newDrawer.id, accessToken, 1),
@@ -115,12 +114,12 @@ describe('Drawer API Test', () => {
     ]);
 
     await request(app.getHttpServer())
-      .delete(`/v1/drawer/${newDrawer.id}`)
+      .delete(`/v1/drawers/${newDrawer.id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
     const drawerListRes = await request(app.getHttpServer())
-      .get('/v1/drawer?size=10')
+      .get('/v1/drawers?size=10')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
@@ -140,7 +139,7 @@ describe('Drawer API Test', () => {
 
   it('[fail] 존재하지 않은 찜박스를 삭제한다면 실패한다', async () => {
     const res = await request(app.getHttpServer())
-      .delete(`/v1/drawer/5000`)
+      .delete(`/v1/drawers/5000`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(404);
 
@@ -152,7 +151,7 @@ describe('Drawer API Test', () => {
 
   it('[fail] 자신의 것이 아닌 찜박스를 삭제한다면 실패한다', async () => {
     const anonymousCreatRes = await request(app.getHttpServer())
-      .post('/v1/drawer')
+      .post('/v1/drawers')
       .set('Authorization', `Bearer ${anonymousToken}`)
       .send({
         name: generateRandomString(),
@@ -162,7 +161,7 @@ describe('Drawer API Test', () => {
     const anonymousBox = anonymousCreatRes.body.data;
 
     const res = await request(app.getHttpServer())
-      .delete(`/v1/drawer/${anonymousBox.id}`)
+      .delete(`/v1/drawers/${anonymousBox.id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(403);
 
@@ -179,7 +178,7 @@ describe('Drawer API Test', () => {
     }
 
     const firstResponse = await request(app.getHttpServer())
-      .get(`/v1/drawer?size=2`)
+      .get(`/v1/drawers?size=2`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -190,7 +189,7 @@ describe('Drawer API Test', () => {
     expect(typeof nextCursor).toBe('number');
 
     const secondResponse = await request(app.getHttpServer())
-      .get(`/v1/drawer?size=2&cursor=${nextCursor}`)
+      .get(`/v1/drawers?size=2&cursor=${nextCursor}`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -216,7 +215,7 @@ describe('Drawer API Test', () => {
     }
 
     const response = await request(app.getHttpServer())
-      .get('/v1/drawer?size=10')
+      .get('/v1/drawers?size=10')
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -236,7 +235,7 @@ describe('Drawer API Test', () => {
     }
 
     const response = await request(app.getHttpServer())
-      .get('/v1/drawer?size=10')
+      .get('/v1/drawers?size=10')
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -257,7 +256,7 @@ describe('Drawer API Test', () => {
     }
 
     const firstResponse = await request(app.getHttpServer())
-      .get(`/v1/drawer/${newDrawer.id}/zzim?size=2`)
+      .get(`/v1/drawers/${newDrawer.id}/zzim?size=2`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -268,7 +267,7 @@ describe('Drawer API Test', () => {
     expect(typeof nextCursor).toBe('number');
 
     const secondResponse = await request(app.getHttpServer())
-      .get(`/v1/drawer/${newDrawer.id}/zzim?size=2&cursor=${nextCursor}`)
+      .get(`/v1/drawers/${newDrawer.id}/zzim?size=2&cursor=${nextCursor}`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -286,7 +285,7 @@ describe('Drawer API Test', () => {
 
   it('[fail] 존재하지 않는 찜박스 내부의 찜 아이템을 조회하려고 할 때 404', async () => {
     const res = await request(app.getHttpServer())
-      .get(`/v1/drawer/50000/zzim?size=10`)
+      .get(`/v1/drawers/50000/zzim?size=10`)
       .set('Authorization', `Bearer ${anonymousToken}`)
       .expect(404);
 
@@ -301,7 +300,7 @@ describe('Drawer API Test', () => {
     const newUserAccessToken = (await resLogin).accessToken;
 
     const res = await request(app.getHttpServer())
-      .get(`/v1/drawer/${anonymousDrawerId}/zzim?size=10`)
+      .get(`/v1/drawers/${anonymousDrawerId}/zzim?size=10`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(403);
 
