@@ -151,61 +151,40 @@ describe('Drawer API Test', () => {
     expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER);
   });
 
-  it('[success] 자신의 찜박스 목록을 조회한다', async () => {
-    const newUserResponse = await registerAndLoginTestUser(app);
-    const newUserAccessToken = newUserResponse.accessToken;
+  it('[sucess] 커서기반 drawer 목록 페이징 조회', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
 
-    const drawers = [];
-    for (let i = 0; i < 4; i++) {
-      const drawer = await userCreateDrawer(app, newUserAccessToken);
-      drawers.push(drawer);
+    for (let i = 1; i <= 4; i++) {
+      await userCreateDrawer(app, newUserAccessToken);
     }
 
-    const res = await request(app.getHttpServer())
-      .get('/v1/drawer?page=1&size=10')
+    const firstResponse = await request(app.getHttpServer())
+      .get(`/v1/drawer?size=2`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
-    expect(res.body.data.drawerList.length).toEqual(4);
-    expect(res.body.data.totalElement).toEqual(4);
-    expect(res.body.data.totalPages).toEqual(1);
-    expect(res.body.data.currentPage).toEqual(1);
+    const firstItems = firstResponse.body.data.data;
+    const nextCursor = firstResponse.body.data.meta.nextCursor;
 
-    for (let i = 0; i < drawers.length; i++) {
-      const reverseDrawer = drawers[drawers.length - 1 - i];
-      const curSaveDrawer = res.body.data.drawerList[i];
+    expect(firstItems).toHaveLength(2);
+    expect(typeof nextCursor).toBe('number');
 
-      expect(reverseDrawer.id).toEqual(curSaveDrawer.id);
-      expect(reverseDrawer.name).toEqual(curSaveDrawer.name);
-    }
-  });
-
-  it('[sucess] 자신의 찜박스 내부의 찜 아이템 목록을 조회한다', async () => {
-    const loginResponse = await registerAndLoginTestUser(app);
-    const newUserAccessToken = loginResponse.accessToken;
-
-    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
-
-    await createZzim(app, newDrawer.id, newUserAccessToken, 1);
-
-    const res = await request(app.getHttpServer())
-      .get(`/v1/drawer/${newDrawer.id}/zzim?size=10`)
+    const secondResponse = await request(app.getHttpServer())
+      .get(`/v1/drawer?size=2&cursor=${nextCursor}`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
-    const existingProduct = await productRepository.gerProductById(1);
+    const secondItems = secondResponse.body.data.data;
 
-    const drawer = res.body.data.drawer;
-    const zzimProductInDrawer = res.body.data.zzims.data[0];
-    const zzimPaginationMeta = res.body.data.zzims.meta;
-    expect(drawer.id).toEqual(newDrawer.id);
-    expect(drawer.name).toEqual(newDrawer.name);
-    expect(zzimProductInDrawer.product_id).toEqual(existingProduct.id);
-    expect(zzimProductInDrawer.name).toEqual(existingProduct.name);
-    expect(zzimProductInDrawer.price).toEqual(existingProduct.price);
-    expect(zzimPaginationMeta.nextCursor).toEqual(null);
-    expect(zzimPaginationMeta.hasNext).toEqual(false);
-    expect(zzimPaginationMeta.size).toEqual(10);
+    expect(secondItems).toHaveLength(2);
+    expect(secondItems[0].id).toBeLessThan(nextCursor);
+    expect(secondItems[1].id).toBeLessThan(secondItems[0].id);
+
+    const allItems = [...firstItems, ...secondItems];
+    for (let i = 1; i < allItems.length; i++) {
+      expect(allItems[i].id).toBeLessThan(allItems[i - 1].id);
+    }
   });
 
   it('[fail] 존재하지 않는 찜박스 내부의 찜 아이템을 조회하려고 할 때 404', async () => {

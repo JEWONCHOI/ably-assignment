@@ -1,9 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Drawer } from 'src/entities';
-import { Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { SaveDrawerDto } from './dto/save-drawer.dto';
 import { GetMyDrawerByNameDto } from './dto/get-my-drawer-by-name.dto';
-import { SearchQuery } from 'src/common/dto/search-query.dto';
+import {
+  CursorSearchQuery,
+  SearchQuery,
+} from 'src/common/dto/search-query.dto';
 
 @Injectable()
 export class DrawerRepository {
@@ -27,29 +30,24 @@ export class DrawerRepository {
 
   /**
    *
-   * @param userId 유저 Unique Key
-   * @param searchQuery page, size
-   * @returns drawerList(찜 박스 목록), total(총 찜박스 개수)
+   * @param userId User Unique Key
+   * @param cursorSearchQuery Cursor Search Query
+   * @returns
    */
-  async getMyDrawerListWithSkipAndTake(
+  async getMyDrawerListWithPagination(
     userId: number,
-    searchQuery: SearchQuery,
-  ): Promise<{ drawerList: Drawer[]; total: number }> {
-    const [drawerList, total] = await this.drawerRepository.findAndCount({
-      select: {
-        id: true,
-        name: true,
-        thumbnails: true,
-        zzim_count: true,
-        created_at: true,
+    cursorSearchQuery: CursorSearchQuery,
+  ): Promise<Drawer[]> {
+    return await this.drawerRepository.find({
+      where: {
+        id: cursorSearchQuery.cursor
+          ? LessThan(cursorSearchQuery.cursor)
+          : undefined,
+        user_id: userId,
       },
-      where: { user_id: userId },
       order: { created_at: 'DESC' },
-      take: searchQuery.size,
-      skip: (searchQuery.page - 1) * searchQuery.size,
+      take: cursorSearchQuery.size + 1,
     });
-
-    return { drawerList, total };
   }
 
   /**

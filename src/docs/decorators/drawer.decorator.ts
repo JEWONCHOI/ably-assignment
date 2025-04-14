@@ -19,7 +19,8 @@ import {
   GET_MY_DRAWER_ZZIM_LIST_DATA,
 } from '../example/data/drawer';
 import { CreateDrawerResponse } from 'src/drawer/dto/create-drawer.dto';
-import { DrawerListPaginationResponse } from 'src/drawer/dto/get-my-drawer-list.dto';
+import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
+import { Drawer } from 'src/entities';
 
 export function CreateDrawerDocs() {
   return applyDecorators(
@@ -100,15 +101,16 @@ export function GetDrawerDocs() {
     }),
     ApiBadRequestResponse({
       description: '필요 쿼리가 존재하지 않는 경우',
-      example: exceptionForm('/v1/drawer', 400, [
-        'page must be a number conforming to the specified constraints',
+      example: exceptionForm(
+        '/v1/drawer',
+        400,
         'size must be a number conforming to the specified constraints',
-      ]),
+      ),
     }),
     ApiOkResponse({
       description: '찜박스 리스트 수령 완료',
       example: successForm('/v1/auth/signup', 200, GET_MY_DRAWER_LIST_DATA),
-      type: DrawerListPaginationResponse,
+      type: ChangeCursorPagiFormResponse<Drawer>,
     }),
   );
 }

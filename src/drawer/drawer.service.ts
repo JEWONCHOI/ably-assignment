@@ -7,7 +7,10 @@ import {
   SearchQuery,
 } from 'src/common/dto/search-query.dto';
 import { Drawer } from 'src/entities';
-import { ChangePaginationFormResponse } from 'src/common/dto/pagination.dto';
+import {
+  ChangeCursorPagiFormResponse,
+  ChangePaginationFormResponse,
+} from 'src/common/dto/pagination.dto';
 import {
   changeCursorPagiForm,
   changePaginationForm,
@@ -46,10 +49,10 @@ export class DrawerService {
 
   async getMyDrawerList(
     userId: number,
-    searchQuery: SearchQuery,
-  ): Promise<ChangePaginationFormResponse<Drawer[]>> {
-    const { drawerList, total } =
-      await this.drawerRepository.getMyDrawerListWithSkipAndTake(
+    searchQuery: CursorSearchQuery,
+  ): Promise<ChangeCursorPagiFormResponse<Drawer>> {
+    const drawerList =
+      await this.drawerRepository.getMyDrawerListWithPagination(
         userId,
         searchQuery,
       );
@@ -63,13 +66,9 @@ export class DrawerService {
           : [],
     }));
 
-    // 코드 단일화
-    return changePaginationForm<Drawer[]>({
-      dataName: 'drawerList',
-      data: processThumbnailImage,
-      totalElement: total,
-      take: searchQuery.size,
-      page: searchQuery.page,
+    return changeCursorPagiForm({
+      dataList: processThumbnailImage,
+      size: searchQuery.size,
     });
   }
 
