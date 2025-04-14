@@ -8,7 +8,7 @@ dotenv.config({
   path: path.resolve(__dirname, `../../.${NODE_ENV}.env`),
 });
 
-export default new DataSource({
+export const AppDataSource = new DataSource({
   type: 'mysql',
   host: process.env.DB_HOST,
   port: +(process.env.DB_PORT as string),
