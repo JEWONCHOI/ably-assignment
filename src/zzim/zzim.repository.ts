@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Zzim } from 'src/entities/zzim.entity';
-import { EntityManager, LessThan, Repository } from 'typeorm';
+import { EntityManager, In, LessThan, Repository } from 'typeorm';
 import { SaveZzimDto } from './providers/save-zzim.dto';
 import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 
@@ -110,5 +110,17 @@ export class ZzimRepository {
     entityManger: EntityManager,
   ): Promise<void> {
     await entityManger.delete(Zzim, { id: zzimId });
+  }
+
+  /**
+   *
+   * @param drawerId Drawer Unique Key
+   * @param entityManager query runner in typeorm
+   */
+  async deleteZzimByDrawerIdWithTransaction(
+    drawerId: number,
+    entityManager: EntityManager,
+  ): Promise<void> {
+    await entityManager.delete(Zzim, { drawer_id: drawerId });
   }
 }

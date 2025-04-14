@@ -132,10 +132,13 @@ export class DrawerRepository {
 
   /**
    *
-   * @param drawerId 박스 Unique Key
-   * @param userId 유저 Unique KEy
+   * @param drawerId Drawer Unique Key
+   * @param entityManager query runner in typeorm
    */
-  async deleteMyDrawer(drawerId: number, userId: number): Promise<void> {
-    await this.drawerRepository.delete({ id: drawerId, user_id: userId });
+  async deleteDrawerWithTransaction(
+    drawerId: number,
+    entityManager: EntityManager,
+  ): Promise<void> {
+    await entityManager.delete(Drawer, { id: drawerId });
   }
 }

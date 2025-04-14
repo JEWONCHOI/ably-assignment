@@ -8,6 +8,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { DrawerService } from './drawer.service';
 import { AuthGuard } from 'src/common/guard/auth.guard';
@@ -27,6 +28,9 @@ import { ZzimItemResponseDto } from 'src/zzim/dto/zzim.dto';
 import { GetDrawerWithZzimsResponse } from './dto/get-my-drawer-zzim-list.dto';
 import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
 import { Drawer } from 'src/entities';
+import { TransactionInterceptor } from 'src/common/interceptors';
+import { TransactionManager } from 'src/common/decorator';
+import { EntityManager } from 'typeorm';
 
 @UseGuards(AuthGuard)
 @Controller('drawer')
@@ -66,11 +70,17 @@ export class DrawerController {
   }
 
   @DeleteDrawerDocs()
+  @UseInterceptors(TransactionInterceptor)
   @Delete(':drawerId')
   async deleteMyDrawer(
     @Req() req: Request,
     @Param('drawerId') drawerId: number,
-  ): Promise<string> {
-    return await this.drawerService.deleteMyDrawer(req.user.id, drawerId);
+    @TransactionManager() trasactionManager: EntityManager,
+  ): Promise<void> {
+    return await this.drawerService.deleteMyDrawer(
+      req.user.id,
+      drawerId,
+      trasactionManager,
+    );
   }
 }
