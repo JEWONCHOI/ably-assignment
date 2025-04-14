@@ -18,6 +18,7 @@ import {
 import { ZzimRepository } from 'src/zzim/zzim.repository';
 import { GetDrawerWithZzimsResponse } from './dto/get-my-drawer-zzim-list.dto';
 import { ZzimItemResponseDto } from 'src/zzim/dto/zzim.dto';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class DrawerService {
@@ -102,8 +103,16 @@ export class DrawerService {
     };
   }
 
-  async deleteMyDrawer(userId: number, drawerId: number): Promise<string> {
-    const existingDrawer = await this.drawerRepository.getDrawerById(drawerId);
+  async deleteMyDrawer(
+    userId: number,
+    drawerId: number,
+    manager: EntityManager,
+  ): Promise<void> {
+    const existingDrawer =
+      await this.drawerRepository.getDrawerByIdWithTransaction(
+        drawerId,
+        manager,
+      );
 
     if (!existingDrawer) {
       throw new HttpException(EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND, 404);
@@ -113,9 +122,10 @@ export class DrawerService {
       throw new HttpException(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER, 403);
     }
 
-    await this.drawerRepository.deleteMyDrawer(drawerId, userId);
-
-    return 'OK';
+    await Promise.all([
+      this.drawerRepository.deleteDrawerWithTransaction(drawerId, manager),
+      this.zzimReposiory.deleteZzimByDrawerIdWithTransaction(drawerId, manager),
+    ]);
   }
 
   private imageLengthMoreThanEqualFour(thumbnail: string[]) {
