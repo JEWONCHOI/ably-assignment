@@ -128,7 +128,7 @@ describe('Drawer API Test', () => {
     expect(drawerList).toHaveLength(0);
 
     const zzimItemListRes = await request(app.getHttpServer())
-      .get('/v1/zzim?size=10')
+      .get('/v1/zzims?size=10')
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
