@@ -2,19 +2,10 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { DrawerRepository } from './drawer.repository';
 import { CreateDrawerDto, CreateDrawerResponse } from './dto/create-drawer.dto';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
-import {
-  CursorSearchQuery,
-  SearchQuery,
-} from 'src/common/dto/search-query.dto';
+import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 import { Drawer } from 'src/entities';
-import {
-  ChangeCursorPagiFormResponse,
-  ChangePaginationFormResponse,
-} from 'src/common/dto/pagination.dto';
-import {
-  changeCursorPagiForm,
-  changePaginationForm,
-} from 'src/common/utils/pagiantaion-from';
+import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
+import { changeCursorPagiForm } from 'src/common/utils/pagiantaion-from';
 import { ZzimRepository } from 'src/zzim/zzim.repository';
 import { GetDrawerWithZzimsResponse } from './dto/get-my-drawer-zzim-list.dto';
 import { ZzimItemResponseDto } from 'src/zzim/dto/zzim.dto';

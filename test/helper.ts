@@ -65,7 +65,7 @@ export async function createZzim(
   productId: number,
 ) {
   const res = await request(app.getHttpServer())
-    .post(`/v1/product/${productId}/zzim`)
+    .post(`/v1/products/${productId}/zzim`)
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
       drawer_id: darwerId,
@@ -79,7 +79,7 @@ export async function userCreateDrawer(
   accessToken: string,
 ): Promise<CreateDrawerResponse> {
   const res = await request(app.getHttpServer())
-    .post('/v1/drawer')
+    .post('/v1/drawers')
     .set('Authorization', `Bearer ${accessToken}`)
     .send({
       name: generateRandomString(),

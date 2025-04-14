@@ -28,7 +28,7 @@ import { TransactionManager } from 'src/common/decorator';
 import { EntityManager } from 'typeorm';
 
 @UseGuards(AuthGuard)
-@Controller('zzim')
+@Controller('zzims')
 export class ZzimController {
   constructor(private readonly zzimService: ZzimService) {}
 

@@ -68,7 +68,7 @@ describe('ZZIM API Test', () => {
     const newDrawer = await userCreateDrawer(app, newUserAccessToken);
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,
@@ -121,7 +121,7 @@ describe('ZZIM API Test', () => {
     const newUserAccessToken = userLoginInfo.accessToken;
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: 30000,
@@ -142,7 +142,7 @@ describe('ZZIM API Test', () => {
     const newUserAccessToken = userLoginInfo.accessToken;
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: anonymousDrawerId,
@@ -162,7 +162,7 @@ describe('ZZIM API Test', () => {
     const newDrawer = await userCreateDrawer(app, newUserAccessToken);
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/40000/zzim`)
+      .post(`/v1/products/40000/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,
@@ -182,7 +182,7 @@ describe('ZZIM API Test', () => {
     const newDrawer = await userCreateDrawer(app, newUserAccessToken);
 
     await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,
@@ -190,7 +190,7 @@ describe('ZZIM API Test', () => {
       .expect(201);
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,
@@ -214,7 +214,7 @@ describe('ZZIM API Test', () => {
     const newZzim = await createZzim(app, newDrawer.id, newUserAccessToken, 1);
 
     const res = await request(app.getHttpServer())
-      .delete(`/v1/zzim/${newZzim.id}`)
+      .delete(`/v1/zzims/${newZzim.id}`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -243,7 +243,7 @@ describe('ZZIM API Test', () => {
     }
 
     await request(app.getHttpServer())
-      .delete(`/v1/zzim/${zzim[zzim.length - 1].id}`)
+      .delete(`/v1/zzims/${zzim[zzim.length - 1].id}`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -259,7 +259,7 @@ describe('ZZIM API Test', () => {
 
   it('[fail] 존재하지 않는 찜을 조회하는 경우 404', async () => {
     const res = await request(app.getHttpServer())
-      .delete(`/v1/zzim/30000`)
+      .delete(`/v1/zzims/30000`)
       .set('Authorization', `Bearer ${anonymouseAccessToken}`)
       .expect(404);
 
@@ -278,7 +278,7 @@ describe('ZZIM API Test', () => {
     const zzim = await createZzim(app, newDrawer.id, newUserAccessToken, 1);
 
     const res = await request(app.getHttpServer())
-      .delete(`/v1/zzim/${zzim.id}`)
+      .delete(`/v1/zzims/${zzim.id}`)
       .set('Authorization', `Bearer ${anonymouseAccessToken}`)
       .expect(403);
 
@@ -302,7 +302,7 @@ describe('ZZIM API Test', () => {
     }
 
     const res = await request(app.getHttpServer())
-      .get(`/v1/zzim?size=10`)
+      .get(`/v1/zzims?size=10`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -332,7 +332,7 @@ describe('ZZIM API Test', () => {
     }
 
     const firstResponse = await request(app.getHttpServer())
-      .get(`/v1/zzim?size=2`)
+      .get(`/v1/zzims?size=2`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
@@ -343,7 +343,7 @@ describe('ZZIM API Test', () => {
     expect(typeof nextCursor).toBe('number');
 
     const secondResponse = await request(app.getHttpServer())
-      .get(`/v1/zzim?size=2&cursor=${nextCursor}`)
+      .get(`/v1/zzims?size=2&cursor=${nextCursor}`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 

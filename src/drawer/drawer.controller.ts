@@ -33,7 +33,7 @@ import { TransactionManager } from 'src/common/decorator';
 import { EntityManager } from 'typeorm';
 
 @UseGuards(AuthGuard)
-@Controller('drawer')
+@Controller('drawers')
 export class DrawerController {
   constructor(private readonly drawerService: DrawerService) {}
 
