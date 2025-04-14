@@ -1,12 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Drawer } from 'src/entities';
-import { LessThan, Repository } from 'typeorm';
+import { EntityManager, LessThan, Repository } from 'typeorm';
 import { SaveDrawerDto } from './dto/save-drawer.dto';
 import { GetMyDrawerByNameDto } from './dto/get-my-drawer-by-name.dto';
-import {
-  CursorSearchQuery,
-  SearchQuery,
-} from 'src/common/dto/search-query.dto';
+import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 
 @Injectable()
 export class DrawerRepository {
@@ -68,49 +65,56 @@ export class DrawerRepository {
 
   /**
    *
-   * @param drawerId 박스 Unique Key
-   * @returns drawer | null
+   * @param drawerId Drawer Unique Key
+   * @returns Drawer
    */
   async getDrawerById(drawerId: number): Promise<Drawer> {
-    return await this.drawerRepository.findOne({
+    return await this.drawerRepository.findOne({ where: { id: drawerId } });
+  }
+
+  /**
+   *
+   * @param drawerId 박스 Unique Key≈
+   * @param entityManager query runner in typeorm
+   * @returns drawer | null
+   */
+  async getDrawerByIdWithTransaction(
+    drawerId: number,
+    entityManager: EntityManager,
+  ): Promise<Drawer> {
+    return await entityManager.findOne(Drawer, {
       where: { id: drawerId },
     });
   }
 
   /**
    *
-   * @param userId User Unique Key
    * @param drawerId Drawer Unique Key
    * @param thumbnails Drawer Thumbnail Image
+   * @param entityManager query runner in typeorm
    */
-  async updateDrawerThumbnails(
-    userId: number,
+  async updateDrawerThumbnailsWithTransaction(
     drawerId: number,
     thumbnails: string[],
-  ): Promise<string> {
-    await this.drawerRepository.update(
-      { id: drawerId, user_id: userId },
-      { thumbnails },
+    entityManager: EntityManager,
+  ): Promise<void> {
+    await entityManager.update(
+      Drawer,
+      { id: drawerId },
+      { thumbnails: thumbnails },
     );
-    return 'OK';
   }
 
   /**
    *
-   * @param userId User Unique Key
    * @param drawerId Drawer Unique Key
-   * @returns
+   * @param entityManager query runner in typeorm
    */
-  async incrementDrawerZzimCount(
-    userId: number,
+  async incrementDrawerZzimCountWithTransaction(
     drawerId: number,
-  ): Promise<string> {
-    await this.drawerRepository.increment(
-      { id: drawerId, user_id: userId },
-      'zzim_count',
-      1,
-    );
-    return 'OK';
+    entityManaer: EntityManager,
+  ): Promise<void> {
+    await entityManaer.increment(Drawer, { id: drawerId }, 'zzim_count', 1);
   }
 
   /**
@@ -119,16 +123,11 @@ export class DrawerRepository {
    * @param drawerId
    * @returns
    */
-  async decreseDrawerZzimCount(
-    userId: number,
+  async decreseDrawerZzimCountWithTransaction(
     drawerId: number,
-  ): Promise<string> {
-    await this.drawerRepository.decrement(
-      { id: drawerId, user_id: userId },
-      'zzim_count',
-      1,
-    );
-    return 'OK';
+    manager: EntityManager,
+  ): Promise<void> {
+    await manager.decrement(Drawer, { id: drawerId }, 'zzim_count', 1);
   }
 
   /**

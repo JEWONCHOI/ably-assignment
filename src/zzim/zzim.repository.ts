@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Zzim } from 'src/entities/zzim.entity';
-import { LessThan, Repository } from 'typeorm';
+import { EntityManager, LessThan, Repository } from 'typeorm';
 import { SaveZzimDto } from './providers/save-zzim.dto';
 import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 
@@ -15,12 +15,20 @@ export class ZzimRepository {
    *
    * @param userId User Unique Key
    * @param productId Product Unique Key
+   * @param entityManager query runner in typeorm
    * @returns Zzim
    */
-  async getMyZzimItem(userId: number, productId: number): Promise<Zzim> {
-    return await this.zzimRepository.findOne({
-      where: { user_id: userId, product_id: productId },
-    });
+  async getMyZzimItemWithTransactionLock(
+    userId: number,
+    productId: number,
+    entityManager: EntityManager,
+  ): Promise<Zzim> {
+    return await entityManager
+      .createQueryBuilder(Zzim, 'zzim')
+      .setLock('pessimistic_write')
+      .where('zzim.user_id = :userId', { userId })
+      .andWhere('zzim.product_id = :productId', { productId })
+      .getOne();
   }
 
   /**
@@ -28,14 +36,23 @@ export class ZzimRepository {
    * @param zzimId Zzim Unique Key
    * @returns Zzim
    */
-  async getZzimById(zzimId: number): Promise<Zzim> {
-    return await this.zzimRepository.findOne({
-      where: { id: zzimId },
-    });
+  async getZzimByIdWithTransactionLock(
+    zzimId: number,
+    entityManager: EntityManager,
+  ): Promise<Zzim> {
+    return await entityManager
+      .createQueryBuilder(Zzim, 'zzim')
+      .setLock('pessimistic_write')
+      .where('zzim.id = :zzimId', { zzimId })
+      .getOne();
   }
 
-  async getZzimByDrawerId(drawerId: number, userId: number): Promise<Zzim[]> {
-    return await this.zzimRepository.find({
+  async getZzimByDrawerIdWithTransaction(
+    drawerId: number,
+    userId: number,
+    entityManager: EntityManager,
+  ): Promise<Zzim[]> {
+    return await entityManager.find(Zzim, {
       where: { drawer_id: drawerId, user_id: userId },
       order: { created_at: 'DESC' },
     });
@@ -81,8 +98,17 @@ export class ZzimRepository {
     return await this.zzimRepository.save(saveZzimDto);
   }
 
-  async deleteZzim(userId: number, zzimId: number): Promise<string> {
-    await this.zzimRepository.delete({ user_id: userId, id: zzimId });
-    return 'OK';
+  async saveZzimWithTransaction(
+    saveZzimDto: SaveZzimDto,
+    entityManager: EntityManager,
+  ): Promise<Zzim> {
+    return await entityManager.save(Zzim, saveZzimDto);
+  }
+
+  async deleteZzimWithTransaction(
+    zzimId: number,
+    entityManger: EntityManager,
+  ): Promise<void> {
+    await entityManger.delete(Zzim, { id: zzimId });
   }
 }

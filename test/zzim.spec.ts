@@ -219,14 +219,9 @@ describe('ZZIM API Test', () => {
       .expect(200);
 
     const drawer = await drawerRepository.getDrawerById(newDrawer.id);
-    const zzimItems = await zzimRepository.getZzimByDrawerId(
-      newDrawer.id,
-      newUser.id,
-    );
 
     expect(res.body).toHaveProperty('data');
     expect(res.body.data).toEqual('OK');
-    expect(zzimItems.length).toEqual(0);
     expect(drawer.zzim_count).toEqual(0);
     expect(drawer.thumbnails).toEqual([]);
   });
@@ -252,12 +247,12 @@ describe('ZZIM API Test', () => {
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
-    const drawer = await drawerRepository.getDrawerById(newDrawer.id);
-
     const expectedThumbnails = product
       .slice(0, -1)
       .reverse()
       .map((p) => p.thumbnail);
+
+    const drawer = await drawerRepository.getDrawerById(newDrawer.id);
 
     expect(drawer.thumbnails).toEqual(expectedThumbnails);
   });

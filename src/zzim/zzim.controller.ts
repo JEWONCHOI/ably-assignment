@@ -8,6 +8,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ZzimService } from './zzim.service';
 import { CreateZzimDto, CreateZzimResponse } from './dto/create-zzim.dto';
@@ -22,6 +23,9 @@ import {
 import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
 import { ZzimItemResponseDto } from './dto/zzim.dto';
+import { TransactionInterceptor } from 'src/common/interceptors';
+import { TransactionManager } from 'src/common/decorator';
+import { EntityManager } from 'typeorm';
 
 @UseGuards(AuthGuard)
 @Controller('zzim')
@@ -38,11 +42,17 @@ export class ZzimController {
   }
 
   @DeleteZzimDos()
+  @UseInterceptors(TransactionInterceptor)
   @Delete(':zzimId')
   async deleteZzim(
     @Req() req: Request,
     @Param('zzimId') zzimId: number,
+    @TransactionManager() transactionManger: EntityManager,
   ): Promise<string> {
-    return await this.zzimService.deleteZzim(req.user.id, zzimId);
+    return await this.zzimService.deleteZzim(
+      req.user.id,
+      zzimId,
+      transactionManger,
+    );
   }
 }

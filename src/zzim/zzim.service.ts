@@ -9,6 +9,7 @@ import { CursorSearchQuery } from 'src/common/dto/search-query.dto';
 import { changeCursorPagiForm } from 'src/common/utils/pagiantaion-from';
 import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
 import { ZzimItemResponseDto } from './dto/zzim.dto';
+import { EntityManager } from 'typeorm';
 
 @Injectable()
 export class ZzimService {
@@ -25,66 +26,70 @@ export class ZzimService {
     userId: number,
     productId: number,
     createZzimDto: CreateZzimDto,
+    manager: EntityManager,
   ): Promise<CreateZzimResponse> {
-    const existingProduct =
-      await this.productRepoitory.gerProductById(productId);
+    const product = await this.productRepoitory.gerProductByIdWithTransaction(
+      productId,
+      manager,
+    );
 
-    if (!existingProduct) {
+    if (!product) {
       throw new HttpException(EXCEPTION_MESSAGE.ITEM.NOT_FOUN_ITEM, 404);
     }
 
-    const existingMyZzim = await this.zzimRepository.getMyZzimItem(
-      userId,
-      productId,
-    );
+    const existingZzim =
+      await this.zzimRepository.getMyZzimItemWithTransactionLock(
+        userId,
+        productId,
+        manager,
+      );
 
-    if (existingMyZzim) {
+    if (existingZzim) {
       throw new HttpException(EXCEPTION_MESSAGE.ZZIM.DUPLICATE_ZZIM_ITEM, 409);
     }
 
-    const exisitingDrawer = await this.drawerRepository.getDrawerById(
+    const drawer = await this.drawerRepository.getDrawerByIdWithTransaction(
       createZzimDto.drawer_id,
+      manager,
     );
 
-    if (!exisitingDrawer) {
+    if (!drawer) {
       throw new HttpException(EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND, 404);
     }
 
-    if (exisitingDrawer.user_id !== userId) {
+    if (drawer.user_id !== userId) {
       throw new HttpException(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER, 403);
     }
 
     const drawerThumbnailsLengthMatchFour =
-      exisitingDrawer.thumbnails.length === this.MAX_DRAWER_THUMBNAIL_LENGTH;
+      drawer.thumbnails.length === this.MAX_DRAWER_THUMBNAIL_LENGTH;
 
-    const setDrawerThumbnailsArray = drawerThumbnailsLengthMatchFour
-      ? [existingProduct.thumbnail, ...exisitingDrawer.thumbnails.slice(0, 3)]
-      : [existingProduct.thumbnail, ...exisitingDrawer.thumbnails];
+    const updatedThumbnails = drawerThumbnailsLengthMatchFour
+      ? [product.thumbnail, ...drawer.thumbnails.slice(0, 3)]
+      : [product.thumbnail, ...drawer.thumbnails];
 
-    // query 병렬 처리
-    const [_, __, zzim] = await Promise.all([
-      // drawer zzim count increment
-      this.drawerRepository.incrementDrawerZzimCount(
-        userId,
-        createZzimDto.drawer_id,
-      ),
-      // drawer thumbnail set
-      this.drawerRepository.updateDrawerThumbnails(
-        userId,
-        createZzimDto.drawer_id,
-        setDrawerThumbnailsArray,
-      ),
+    await this.drawerRepository.incrementDrawerZzimCountWithTransaction(
+      createZzimDto.drawer_id,
+      manager,
+    );
 
-      // save zzim item
-      this.zzimRepository.saveZzim({
-        product_id: existingProduct.id,
-        name: existingProduct.name,
-        price: existingProduct.price,
-        thumbnail: existingProduct.thumbnail,
+    await this.drawerRepository.updateDrawerThumbnailsWithTransaction(
+      createZzimDto.drawer_id,
+      updatedThumbnails,
+      manager,
+    );
+
+    const zzim = await this.zzimRepository.saveZzimWithTransaction(
+      {
+        product_id: product.id,
+        name: product.name,
+        price: product.price,
+        thumbnail: product.thumbnail,
         user_id: userId,
-        drawer_id: createZzimDto.drawer_id,
-      }),
-    ]);
+        drawer_id: drawer.id,
+      },
+      manager,
+    );
 
     return {
       id: zzim.id,
@@ -109,8 +114,13 @@ export class ZzimService {
     });
   }
 
-  async deleteZzim(userId: number, zzimId: number): Promise<string> {
-    const existingZzim = await this.zzimRepository.getZzimById(zzimId);
+  async deleteZzim(
+    userId: number,
+    zzimId: number,
+    manager: EntityManager,
+  ): Promise<string> {
+    const existingZzim =
+      await this.zzimRepository.getZzimByIdWithTransactionLock(zzimId, manager);
 
     if (!existingZzim) {
       throw new HttpException(EXCEPTION_MESSAGE.ZZIM.NOT_FOUND_ZZIM, 404);
@@ -123,20 +133,21 @@ export class ZzimService {
     const thumbnails = await this.calculateThumbnailImageWhenDeleteZzim(
       existingZzim,
       userId,
+      manager,
     );
 
-    await Promise.all([
-      this.zzimRepository.deleteZzim(userId, zzimId),
-      this.drawerRepository.decreseDrawerZzimCount(
-        userId,
-        existingZzim.drawer_id,
-      ),
-      this.drawerRepository.updateDrawerThumbnails(
-        userId,
-        existingZzim.drawer_id,
-        thumbnails,
-      ),
-    ]);
+    await this.zzimRepository.deleteZzimWithTransaction(zzimId, manager);
+
+    await this.drawerRepository.decreseDrawerZzimCountWithTransaction(
+      existingZzim.drawer_id,
+      manager,
+    );
+
+    await this.drawerRepository.updateDrawerThumbnailsWithTransaction(
+      existingZzim.drawer_id,
+      thumbnails,
+      manager,
+    );
 
     return 'OK';
   }
@@ -144,11 +155,14 @@ export class ZzimService {
   private async calculateThumbnailImageWhenDeleteZzim(
     zzim: Zzim,
     userId: number,
+    entityManager: EntityManager,
   ): Promise<string[]> {
-    const zzimItems = await this.zzimRepository.getZzimByDrawerId(
-      zzim.drawer_id,
-      userId,
-    );
+    const zzimItems =
+      await this.zzimRepository.getZzimByDrawerIdWithTransaction(
+        zzim.drawer_id,
+        userId,
+        entityManager,
+      );
 
     const remainingItems = zzimItems.filter(
       (item) => item.product_id !== zzim.product_id,
