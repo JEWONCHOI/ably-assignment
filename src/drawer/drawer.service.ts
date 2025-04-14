@@ -59,9 +59,9 @@ export class DrawerService {
 
     const processThumbnailImage = drawerList.map((drawer) => ({
       ...drawer,
-      thumbnails: this.imageLengthMoreThanFour(drawer.thumbnails)
+      thumbnails: this.imageLengthMoreThanEqualFour(drawer.thumbnails)
         ? drawer.thumbnails.slice(0, 4)
-        : this.imageLengthLessThanFour(drawer.thumbnails)
+        : this.imageLengthBetweenOneAndThree(drawer.thumbnails)
           ? drawer.thumbnails.slice(0, 1)
           : [],
     }));
@@ -87,7 +87,7 @@ export class DrawerService {
       throw new HttpException(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER, 403);
     }
 
-    const zzimList = await this.zzimReposiory.getMyZzzimWithPaginationById(
+    const zzimList = await this.zzimReposiory.getMyZzimWithPaginationById(
       drawerId,
       cursorSearchQuery.cursor,
       cursorSearchQuery.size,
@@ -118,13 +118,11 @@ export class DrawerService {
     return 'OK';
   }
 
-  private imageLengthMoreThanFour(thumbnail: string[]) {
-    if (thumbnail.length && thumbnail.length > 3) return true;
-    else return false;
+  private imageLengthMoreThanEqualFour(thumbnail: string[]) {
+    return thumbnail.length >= 4;
   }
 
-  private imageLengthLessThanFour(thumbnail: string[]) {
-    if (thumbnail.length && thumbnail.length > 4) return true;
-    else return false;
+  private imageLengthBetweenOneAndThree(thumbnail: string[]) {
+    return thumbnail.length > 0 && thumbnail.length < 4;
   }
 }

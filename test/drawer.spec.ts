@@ -8,12 +8,13 @@ import { ResponseInterceptor } from 'src/common/interceptors';
 import { generateRandomString } from 'src/common/utils/function';
 import {
   createZzim,
-  loginUser,
   registerAndLoginTestUser,
   userCreateDrawer,
 } from './helper';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
 import { ProductRepository } from 'src/product/product.repository';
+import { DrawerRepository } from 'src/drawer/drawer.repository';
+import { Drawer } from 'src/entities';
 
 describe('Drawer API Test', () => {
   let app: INestApplication;
@@ -22,6 +23,7 @@ describe('Drawer API Test', () => {
   let anonymousToken: string;
   let anonymousDrawerId: number;
   let productRepository: ProductRepository;
+  let drawerRepository: DrawerRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -52,6 +54,7 @@ describe('Drawer API Test', () => {
     anonymousDrawerId = anonymousDrawer.id;
 
     productRepository = moduleFixture.get<ProductRepository>(ProductRepository);
+    drawerRepository = moduleFixture.get<DrawerRepository>(DrawerRepository);
   });
 
   afterAll(async () => {
@@ -151,7 +154,7 @@ describe('Drawer API Test', () => {
     expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER);
   });
 
-  it('[sucess] 커서기반 drawer 목록 페이징 조회', async () => {
+  it('[sucess] 커서기반 찜박스 목록 페이징 조회', async () => {
     const userLoginInfo = await registerAndLoginTestUser(app);
     const newUserAccessToken = userLoginInfo.accessToken;
 
@@ -176,6 +179,84 @@ describe('Drawer API Test', () => {
       .expect(200);
 
     const secondItems = secondResponse.body.data.data;
+
+    expect(secondItems).toHaveLength(2);
+    expect(secondItems[0].id).toBeLessThan(nextCursor);
+    expect(secondItems[1].id).toBeLessThan(secondItems[0].id);
+
+    const allItems = [...firstItems, ...secondItems];
+    for (let i = 1; i < allItems.length; i++) {
+      expect(allItems[i].id).toBeLessThan(allItems[i - 1].id);
+    }
+  });
+
+  it('[success] 썸네일 4개 이상이면 최신순 4개만 보여준다', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    for (let i = 1; i <= 5; i++) {
+      await createZzim(app, newDrawer.id, newUserAccessToken, i);
+    }
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/drawer?size=10')
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const drawer = response.body.data.data.find(
+      (drawer: Drawer) => drawer.id === newDrawer.id,
+    );
+    expect(drawer.thumbnails).toHaveLength(4);
+  });
+
+  it('[success] 썸네일 4개 미만이면 최신순 1개만 보여준다', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    for (let i = 1; i <= 2; i++) {
+      await createZzim(app, newDrawer.id, newUserAccessToken, i);
+    }
+
+    const response = await request(app.getHttpServer())
+      .get('/v1/drawer?size=10')
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const drawer = response.body.data.data.find(
+      (drawer: Drawer) => drawer.id === newDrawer.id,
+    );
+
+    expect(drawer.thumbnails).toHaveLength(1);
+  });
+
+  it('[sucess] 커서기반 찜박스 내부 찜 아이템 목록 페이징 조회', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
+    const newDrawer = await userCreateDrawer(app, newUserAccessToken);
+
+    for (let i = 1; i <= 4; i++) {
+      await createZzim(app, newDrawer.id, newUserAccessToken, i);
+    }
+
+    const firstResponse = await request(app.getHttpServer())
+      .get(`/v1/drawer/${newDrawer.id}/zzim?size=2`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const firstItems = firstResponse.body.data.zzims.data;
+    const nextCursor = firstResponse.body.data.zzims.meta.nextCursor;
+
+    expect(firstItems).toHaveLength(2);
+    expect(typeof nextCursor).toBe('number');
+
+    const secondResponse = await request(app.getHttpServer())
+      .get(`/v1/drawer/${newDrawer.id}/zzim?size=2&cursor=${nextCursor}`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const secondItems = secondResponse.body.data.zzims.data;
 
     expect(secondItems).toHaveLength(2);
     expect(secondItems[0].id).toBeLessThan(nextCursor);

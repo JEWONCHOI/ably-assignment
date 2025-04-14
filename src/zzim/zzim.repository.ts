@@ -57,7 +57,7 @@ export class ZzimRepository {
     });
   }
 
-  async getMyZzzimWithPaginationById(
+  async getMyZzimWithPaginationById(
     drawerId: number,
     cursor: number,
     size: number,

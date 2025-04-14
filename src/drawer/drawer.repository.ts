@@ -88,7 +88,7 @@ export class DrawerRepository {
     drawerId: number,
     thumbnails: string[],
   ): Promise<string> {
-    this.drawerRepository.update(
+    await this.drawerRepository.update(
       { id: drawerId, user_id: userId },
       { thumbnails },
     );
