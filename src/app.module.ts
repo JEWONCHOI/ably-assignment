@@ -8,6 +8,7 @@ import { TokenModule } from './token/token.module';
 import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
 import { DrawerModule } from './drawer/drawer.module';
+import { ZzimModule } from './zzim/zzim.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DrawerModule } from './drawer/drawer.module';
     UserModule,
     ProductModule,
     DrawerModule,
+    ZzimModule,
   ],
   controllers: [AppController],
   providers: [AppService],

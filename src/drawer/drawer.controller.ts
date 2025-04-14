@@ -17,8 +17,16 @@ import {
   CreateDrawerDocs,
   DeleteDrawerDocs,
   GetDrawerDocs,
+  GetMyDrawerZzimListDocs,
 } from 'src/docs/decorators/drawer.decorator';
-import { SearchQuery } from 'src/common/dto/search-query.dto';
+import {
+  CursorSearchQuery,
+  SearchQuery,
+} from 'src/common/dto/search-query.dto';
+import { ZzimItemResponseDto } from 'src/zzim/dto/zzim.dto';
+import { GetDrawerWithZzimsResponse } from './dto/get-my-drawer-zzim-list.dto';
+import { ChangeCursorPagiFormResponse } from 'src/common/dto/pagination.dto';
+import { Drawer } from 'src/entities';
 
 @UseGuards(AuthGuard)
 @Controller('drawer')
@@ -38,9 +46,23 @@ export class DrawerController {
   @Get()
   async getMyDrawerList(
     @Req() req: Request,
-    @Query() searchQuery: SearchQuery,
-  ) {
+    @Query() searchQuery: CursorSearchQuery,
+  ): Promise<ChangeCursorPagiFormResponse<Drawer>> {
     return await this.drawerService.getMyDrawerList(req.user.id, searchQuery);
+  }
+
+  @GetMyDrawerZzimListDocs()
+  @Get(':drawerId/zzim')
+  async getMyDrawerZzimList(
+    @Req() req: Request,
+    @Param('drawerId') drawerId: number,
+    @Query() cursorSearchQuery: CursorSearchQuery,
+  ): Promise<GetDrawerWithZzimsResponse<ZzimItemResponseDto>> {
+    return await this.drawerService.getMyDrawerZzimLits(
+      req.user.id,
+      drawerId,
+      cursorSearchQuery,
+    );
   }
 
   @DeleteDrawerDocs()

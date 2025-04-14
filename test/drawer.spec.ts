@@ -6,14 +6,22 @@ import { DataSource } from 'typeorm';
 import { AllExceptionsFilter } from 'src/common/filters';
 import { ResponseInterceptor } from 'src/common/interceptors';
 import { generateRandomString } from 'src/common/utils/function';
-import { registerAndLoginTestUser, userCreateDrawer } from './helper';
+import {
+  createZzim,
+  loginUser,
+  registerAndLoginTestUser,
+  userCreateDrawer,
+} from './helper';
 import { EXCEPTION_MESSAGE } from 'src/common/exceptions';
+import { ProductRepository } from 'src/product/product.repository';
 
 describe('Drawer API Test', () => {
   let app: INestApplication;
   let dataSource: DataSource;
   let accessToken: string;
   let anonymousToken: string;
+  let anonymousDrawerId: number;
+  let productRepository: ProductRepository;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -40,6 +48,10 @@ describe('Drawer API Test', () => {
 
     const anonymousUserResponse = await registerAndLoginTestUser(app);
     anonymousToken = anonymousUserResponse.accessToken;
+    const anonymousDrawer = await userCreateDrawer(app, anonymousToken);
+    anonymousDrawerId = anonymousDrawer.id;
+
+    productRepository = moduleFixture.get<ProductRepository>(ProductRepository);
   });
 
   afterAll(async () => {
@@ -139,32 +151,64 @@ describe('Drawer API Test', () => {
     expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER);
   });
 
-  it('[success] 자신의 찜박스 목록을 조회한다', async () => {
-    const newUserResponse = await registerAndLoginTestUser(app);
-    const newUserAccessToken = newUserResponse.accessToken;
+  it('[sucess] 커서기반 drawer 목록 페이징 조회', async () => {
+    const userLoginInfo = await registerAndLoginTestUser(app);
+    const newUserAccessToken = userLoginInfo.accessToken;
 
-    const drawers = [];
-    for (let i = 0; i < 4; i++) {
-      const drawer = await userCreateDrawer(app, newUserAccessToken);
-      drawers.push(drawer);
+    for (let i = 1; i <= 4; i++) {
+      await userCreateDrawer(app, newUserAccessToken);
     }
 
-    const res = await request(app.getHttpServer())
-      .get('/v1/drawer?page=1&size=10')
+    const firstResponse = await request(app.getHttpServer())
+      .get(`/v1/drawer?size=2`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .expect(200);
 
-    expect(res.body.data.drawerList.length).toEqual(4);
-    expect(res.body.data.totalElement).toEqual(4);
-    expect(res.body.data.totalPages).toEqual(1);
-    expect(res.body.data.currentPage).toEqual(1);
+    const firstItems = firstResponse.body.data.data;
+    const nextCursor = firstResponse.body.data.meta.nextCursor;
 
-    for (let i = 0; i < drawers.length; i++) {
-      const reverseDrawer = drawers[drawers.length - 1 - i];
-      const curSaveDrawer = res.body.data.drawerList[i];
+    expect(firstItems).toHaveLength(2);
+    expect(typeof nextCursor).toBe('number');
 
-      expect(reverseDrawer.id).toEqual(curSaveDrawer.id);
-      expect(reverseDrawer.name).toEqual(curSaveDrawer.name);
+    const secondResponse = await request(app.getHttpServer())
+      .get(`/v1/drawer?size=2&cursor=${nextCursor}`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(200);
+
+    const secondItems = secondResponse.body.data.data;
+
+    expect(secondItems).toHaveLength(2);
+    expect(secondItems[0].id).toBeLessThan(nextCursor);
+    expect(secondItems[1].id).toBeLessThan(secondItems[0].id);
+
+    const allItems = [...firstItems, ...secondItems];
+    for (let i = 1; i < allItems.length; i++) {
+      expect(allItems[i].id).toBeLessThan(allItems[i - 1].id);
     }
+  });
+
+  it('[fail] 존재하지 않는 찜박스 내부의 찜 아이템을 조회하려고 할 때 404', async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/v1/drawer/50000/zzim?size=10`)
+      .set('Authorization', `Bearer ${anonymousToken}`)
+      .expect(404);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(
+      EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND,
+    );
+  });
+
+  it('[fail] 내 찜박스가 아닌 찜박스의 내부의 찜 아이템을 조회하려고 할 때 403', async () => {
+    const resLogin = registerAndLoginTestUser(app);
+    const newUserAccessToken = (await resLogin).accessToken;
+
+    const res = await request(app.getHttpServer())
+      .get(`/v1/drawer/${anonymousDrawerId}/zzim?size=10`)
+      .set('Authorization', `Bearer ${newUserAccessToken}`)
+      .expect(403);
+
+    expect(res.body).toHaveProperty('message');
+    expect(res.body.message).toContain(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER);
   });
 });

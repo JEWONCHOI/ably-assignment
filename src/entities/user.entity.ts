@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Drawer } from './drawer.entity';
+import { Zzim } from './zzim.entity';
 
 @Entity({ name: 'user' })
 @Index('email_index', ['email'])
@@ -36,4 +37,9 @@ export class User {
     createForeignKeyConstraints: false,
   })
   drawers: Drawer[];
+
+  @OneToMany(() => Zzim, (zzim) => zzim.user, {
+    createForeignKeyConstraints: false,
+  })
+  zzims: Zzim[];
 }

@@ -5,10 +5,12 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Zzim } from './zzim.entity';
 
 @Entity({ name: 'drawer' })
 export class Drawer {
@@ -48,6 +50,11 @@ export class Drawer {
     type: 'int',
   })
   user_id: number;
+
+  @OneToMany(() => Zzim, (zzim) => zzim.drawer, {
+    createForeignKeyConstraints: false,
+  })
+  zzims: Zzim[];
 
   @CreateDateColumn()
   created_at: string;

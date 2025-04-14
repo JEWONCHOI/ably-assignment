@@ -96,7 +96,7 @@ describe('User API With AutGuard Test', () => {
 
   it('[fail] 만료된 토큰을 사용하여 실패합니다', async () => {
     const expiredToken =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjksInVzZXJFbWFpbCI6InRlc3RAZW1haWwuY29tIiwidXNlck5pY2tuYW1lIjoi7LWc7KCc7JuQMiIsImlhdCI6MTc0NDQ0NTc2NCwiZXhwIjoxNzQ0NDQ1NzY1fQ.eA86Dy4DuX5B0hPMp9BOeS20lSHfFhUuSC_mjNEgUdY';
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjExNCwidXNlckVtYWlsIjoidGVzdDJAZW1haWwuY29tIiwidXNlck5pY2tuYW1lIjoi7LWc7KCc7JuQMiIsImlhdCI6MTc0NDUzNTE1MSwiZXhwIjoxNzQ0NTM1MTUyfQ.lcgLYvPwRa-njsZApUPM-VKPbdpGfOD5TIyMypTpPcs';
 
     const res = await request(app.getHttpServer())
       .get('/v1/user/info')
