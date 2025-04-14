@@ -68,7 +68,7 @@ describe('ZZIM API Test', () => {
     const newDrawer = await userCreateDrawer(app, newUserAccessToken);
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,
@@ -121,7 +121,7 @@ describe('ZZIM API Test', () => {
     const newUserAccessToken = userLoginInfo.accessToken;
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: 30000,
@@ -142,7 +142,7 @@ describe('ZZIM API Test', () => {
     const newUserAccessToken = userLoginInfo.accessToken;
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: anonymousDrawerId,
@@ -162,7 +162,7 @@ describe('ZZIM API Test', () => {
     const newDrawer = await userCreateDrawer(app, newUserAccessToken);
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/40000/zzim`)
+      .post(`/v1/products/40000/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,
@@ -182,7 +182,7 @@ describe('ZZIM API Test', () => {
     const newDrawer = await userCreateDrawer(app, newUserAccessToken);
 
     await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,
@@ -190,7 +190,7 @@ describe('ZZIM API Test', () => {
       .expect(201);
 
     const res = await request(app.getHttpServer())
-      .post(`/v1/product/1/zzim`)
+      .post(`/v1/products/1/zzim`)
       .set('Authorization', `Bearer ${newUserAccessToken}`)
       .send({
         drawer_id: newDrawer.id,

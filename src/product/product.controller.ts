@@ -20,7 +20,7 @@ import { ZzimService } from 'src/zzim/zzim.service';
 import { EntityManager } from 'typeorm';
 
 @UseGuards(AuthGuard)
-@Controller('product')
+@Controller('products')
 export class ProductController {
   constructor(private readonly zzimService: ZzimService) {}
 

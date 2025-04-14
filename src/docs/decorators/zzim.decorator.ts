@@ -31,7 +31,7 @@ export function CreateZzimDocs() {
       description: '찜을 성공적으로 생성합니다',
       type: CreateZzimResponse,
       example: successForm(
-        '/v1/product/{productId}/zzim/',
+        '/v1/products/{productId}/zzim/',
         201,
         CREATE_ZZIM_RESPONSE_DATA,
       ),
@@ -45,7 +45,7 @@ export function CreateZzimDocs() {
             notFoundProduct: {
               summary: '찜을 하려는 상품이 존재하지 않는 경우',
               value: exceptionForm(
-                '/v1/product/123891231/zzims/',
+                '/v1/products/123891231/zzim',
                 404,
                 EXCEPTION_MESSAGE.ITEM.NOT_FOUN_ITEM,
               ),
@@ -53,7 +53,7 @@ export function CreateZzimDocs() {
             notFoundDrawer: {
               summary: '찜을 저장할 상자가 없는 경우',
               value: exceptionForm(
-                '/v1/product/1/zzims/',
+                '/v1/products/1/zzim',
                 404,
                 EXCEPTION_MESSAGE.DRAWER.DRAWER_NOT_FOUND,
               ),
@@ -65,7 +65,7 @@ export function CreateZzimDocs() {
     ApiConflictResponse({
       description: '찜을 하려는 상품이 이미 내 찜 목록에 있는 경우',
       example: exceptionForm(
-        '/v1/zzims/3',
+        '/v1/products/1/zzim',
         409,
         EXCEPTION_MESSAGE.ZZIM.DUPLICATE_ZZIM_ITEM,
       ),
@@ -73,7 +73,7 @@ export function CreateZzimDocs() {
     ApiUnauthorizedResponse({
       description: '찜을 저장하는 찜박스가 내 찜 박스가 아닌 경우',
       example: exceptionForm(
-        '/v1/product/12/zzims/',
+        '/v1/products/12/zzim',
         409,
         EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER,
       ),
