@@ -87,7 +87,7 @@ export class DrawerService {
       throw new HttpException(EXCEPTION_MESSAGE.DRAWER.NOT_MY_DRAWER, 403);
     }
 
-    const zzimList = await this.zzimReposiory.getMyZzzimWithPaginationById(
+    const zzimList = await this.zzimReposiory.getMyZzimWithPaginationById(
       drawerId,
       cursorSearchQuery.cursor,
       cursorSearchQuery.size,
