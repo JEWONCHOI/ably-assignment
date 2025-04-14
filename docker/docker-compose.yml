@@ -1,0 +1,39 @@
+version: '3.9'
+
+services:
+  mysql:
+    container_name: ably-mysql
+    image: docker.io/bitnami/mysql:8.0.23-debian-10-r85
+    restart: always
+    ports:
+      - '3307:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '1313'
+      MYSQL_DATABASE: 'ably-assignment'
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h localhost -uroot -p1234']
+      interval: 10s
+      timeout: 5s
+      retries: 6
+  test:
+    container_name: ably-test
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - ../.production.env
+    build:
+      context: ..
+      dockerfile: docker/test.dockerfile
+  server:
+    depends_on:
+      mysql:
+        condition: service_healthy
+    build:
+      context: ..
+      dockerfile: docker/nestjs.dockerfile
+    ports:
+      - 3000:3000
+    env_file:
+      - ../.production.env
+    restart: on-failure
