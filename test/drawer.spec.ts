@@ -102,24 +102,40 @@ describe('Drawer API Test', () => {
   });
 
   it('[success] 찜박스를 성공적으로 삭제한다', async () => {
-    const boxName = generateRandomString();
+    const loginRes = await registerAndLoginTestUser(app);
 
-    const beforeCreateBox = await request(app.getHttpServer())
-      .post('/v1/drawer')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        name: boxName,
-      })
-      .expect(201);
+    const accessToken = loginRes.accessToken;
 
-    const createdBoxId = beforeCreateBox.body.data.id;
+    const newDrawer = await userCreateDrawer(app, accessToken);
+    console.log('🚀 ~ it ~ newDrawer:', newDrawer);
 
-    const res = await request(app.getHttpServer())
-      .delete(`/v1/drawer/${createdBoxId}`)
+    await Promise.all([
+      createZzim(app, newDrawer.id, accessToken, 1),
+      createZzim(app, newDrawer.id, accessToken, 2),
+    ]);
+
+    await request(app.getHttpServer())
+      .delete(`/v1/drawer/${newDrawer.id}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
 
-    expect(res.body.data).toBe('OK');
+    const drawerListRes = await request(app.getHttpServer())
+      .get('/v1/drawer?size=10')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    const drawerList = drawerListRes.body.data.data;
+
+    expect(drawerList).toHaveLength(0);
+
+    const zzimItemListRes = await request(app.getHttpServer())
+      .get('/v1/zzim?size=10')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .expect(200);
+
+    const zzimList = zzimItemListRes.body.data.data;
+
+    expect(zzimList).toHaveLength(0);
   });
 
   it('[fail] 존재하지 않은 찜박스를 삭제한다면 실패한다', async () => {
